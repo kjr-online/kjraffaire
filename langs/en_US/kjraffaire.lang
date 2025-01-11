@@ -5,9 +5,9 @@
 #
 
 # Module label 'ModuleKjraffaireName'
-ModuleKjraffaireName = Kjraffaire
+ModuleKjraffaireName = Affaires
 # Module description 'ModuleKjraffaireDesc'
-ModuleKjraffaireDesc = Kjraffaire description
+ModuleKjraffaireDesc = Gestion par affaires
 
 #
 # Admin page
@@ -32,7 +32,7 @@ KjraffaireAboutPage = Kjraffaire about page
 #
 # Sample page
 #
-KjraffaireArea = Home Kjraffaire
+KjraffaireArea = Accueil Mes Affaires
 MyPageName = My page name
 
 #

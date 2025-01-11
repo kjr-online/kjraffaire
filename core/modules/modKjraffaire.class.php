@@ -309,80 +309,7 @@ class modKjraffaire extends DolibarrModules
 		*/
 		/* END MODULEBUILDER PERMISSIONS */
 
-
-		// Main menu entries to add
-		$this->menu = array();
-		$r = 0;
-		// Add here entries to declare new menus
-		/* BEGIN MODULEBUILDER TOPMENU */
-		$this->menu[$r++] = array(
-			'fk_menu'=>'', // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
-			'type'=>'top', // This is a Top menu entry
-			'titre'=>'ModuleKjraffaireName',
-			'prefix' => img_picto('', $this->picto, 'class="pictofixedwidth valignmiddle"'),
-			'mainmenu'=>'kjraffaire',
-			'leftmenu'=>'',
-			'url'=>'/kjraffaire/kjraffaireindex.php',
-			'langs'=>'kjraffaire@kjraffaire', // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-			'position'=>1000 + $r,
-			'enabled'=>'isModEnabled("kjraffaire")', // Define condition to show or hide menu entry. Use 'isModEnabled("kjraffaire")' if entry must be visible if module is enabled.
-			'perms'=>'1', // Use 'perms'=>'$user->hasRight("kjraffaire", "myobject", "read")' if you want your menu with a permission rules
-			'target'=>'',
-			'user'=>2, // 0=Menu for internal users, 1=external users, 2=both
-		);
-		/* END MODULEBUILDER TOPMENU */
-
-		/* BEGIN MODULEBUILDER LEFTMENU MYOBJECT */
-		/*
-		$this->menu[$r++]=array(
-			'fk_menu'=>'fk_mainmenu=kjraffaire',      // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
-			'type'=>'left',                          // This is a Left menu entry
-			'titre'=>'MyObject',
-			'prefix' => img_picto('', $this->picto, 'class="pictofixedwidth valignmiddle paddingright"'),
-			'mainmenu'=>'kjraffaire',
-			'leftmenu'=>'myobject',
-			'url'=>'/kjraffaire/kjraffaireindex.php',
-			'langs'=>'kjraffaire@kjraffaire',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-			'position'=>1000+$r,
-			'enabled'=>'isModEnabled("kjraffaire")', // Define condition to show or hide menu entry. Use 'isModEnabled("kjraffaire")' if entry must be visible if module is enabled.
-			'perms'=>'$user->hasRight("kjraffaire", "myobject", "read")',
-			'target'=>'',
-			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
-			'object'=>'MyObject'
-		);
-		$this->menu[$r++]=array(
-			'fk_menu'=>'fk_mainmenu=kjraffaire,fk_leftmenu=myobject',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
-			'type'=>'left',			                // This is a Left menu entry
-			'titre'=>'New_MyObject',
-			'mainmenu'=>'kjraffaire',
-			'leftmenu'=>'kjraffaire_myobject_new',
-			'url'=>'/kjraffaire/myobject_card.php?action=create',
-			'langs'=>'kjraffaire@kjraffaire',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-			'position'=>1000+$r,
-			'enabled'=>'isModEnabled("kjraffaire")', // Define condition to show or hide menu entry. Use 'isModEnabled("kjraffaire")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
-			'perms'=>'$user->hasRight("kjraffaire", "myobject", "write")'
-			'target'=>'',
-			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
-			'object'=>'MyObject'
-		);
-		$this->menu[$r++]=array(
-			'fk_menu'=>'fk_mainmenu=kjraffaire,fk_leftmenu=myobject',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
-			'type'=>'left',			                // This is a Left menu entry
-			'titre'=>'List_MyObject',
-			'mainmenu'=>'kjraffaire',
-			'leftmenu'=>'kjraffaire_myobject_list',
-			'url'=>'/kjraffaire/myobject_list.php',
-			'langs'=>'kjraffaire@kjraffaire',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-			'position'=>1000+$r,
-			'enabled'=>'isModEnabled("kjraffaire")', // Define condition to show or hide menu entry. Use 'isModEnabled("kjraffaire")' if entry must be visible if module is enabled.
-			'perms'=>'$user->hasRight("kjraffaire", "myobject", "read")'
-			'target'=>'',
-			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
-			'object'=>'MyObject'
-		);
-		*/
-		/* END MODULEBUILDER LEFTMENU MYOBJECT */
-
+        include DOL_DOCUMENT_ROOT.'/custom/kjraffaire/menu/menus.php';
 
 		// Exports profiles provided by this module
 		$r = 1;
@@ -480,6 +407,9 @@ class modKjraffaire extends DolibarrModules
 		//$result4=$extrafields->addExtraField('kjraffaire_myattr4', "New Attr 4 label", 'select',  1,  3, 'thirdparty',   0, 1, '', array('options'=>array('code1'=>'Val1','code2'=>'Val2','code3'=>'Val3')), 1,'', -1, 0, '', '', 'kjraffaire@kjraffaire', 'isModEnabled("kjraffaire")');
 		//$result5=$extrafields->addExtraField('kjraffaire_myattr5', "New Attr 5 label", 'text',    1, 10, 'user',         0, 0, '', '', 1, '', -1, 0, '', '', 'kjraffaire@kjraffaire', 'isModEnabled("kjraffaire")');
 
+		// Ajout des champs extras des affaires dans projet
+		include_once "inc-extrafields-affaire.php";
+
 		// Permissions
 		$this->remove($options);
 
@@ -518,7 +448,7 @@ class modKjraffaire extends DolibarrModules
 				));
 			}
 		}
-
+		
 		return $this->_init($sql, $options);
 	}
 

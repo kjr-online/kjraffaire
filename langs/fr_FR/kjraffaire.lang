@@ -4,35 +4,35 @@
 # Generic
 #
 
-# Module label 'ModuleMyModuleName'
-ModuleMyModuleName = MyModule
-# Module description 'ModuleMyModuleDesc'
-ModuleMyModuleDesc = MyModule description
+# Module label 'ModuleKjraffaireName'
+ModuleKjraffaireName = Affaires
+# Module description 'ModuleKjraffaireDesc'
+ModuleKjraffaireDesc = Gestion par affaires
 
 #
 # Admin page
 #
-MyModuleSetup = MyModule setup
+KjraffaireSetup = Kjraffaire setup
 Settings = Settings
-MyModuleSetupPage = MyModule setup page
+KjraffaireSetupPage = Kjraffaire setup page
 NewSection=New section
-MYMODULE_MYPARAM1 = My param 1
-MYMODULE_MYPARAM1Tooltip = My param 1 tooltip
-MYMODULE_MYPARAM2=My param 2
-MYMODULE_MYPARAM2Tooltip=My param 2 tooltip
+KJRAFFAIRE_MYPARAM1 = My param 1
+KJRAFFAIRE_MYPARAM1Tooltip = My param 1 tooltip
+KJRAFFAIRE_MYPARAM2=My param 2
+KJRAFFAIRE_MYPARAM2Tooltip=My param 2 tooltip
 
 
 #
 # About page
 #
 About = About
-MyModuleAbout = About MyModule
-MyModuleAboutPage = MyModule about page
+KjraffaireAbout = About Kjraffaire
+KjraffaireAboutPage = Kjraffaire about page
 
 #
 # Sample page
 #
-MyModuleArea = Home MyModule
+KjraffaireArea = Accueil Mes Affaires
 MyPageName = My page name
 
 #
