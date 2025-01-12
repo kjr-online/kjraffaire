@@ -220,27 +220,33 @@ class modKjraffaire extends DolibarrModules
 		$this->dictionaries=array(
 			'langs'=>'kjraffaire@kjraffaire',
 			// List of tables we want to see into dictonnary editor
-			'tabname'=>array("kjraffaire_dico_type_affaire"),
+			'tabname'=>array("kjraffaire_dico_type_affaire","kjraffaire_dico_action_juridique"),
 			// Label of tables
-			'tablib'=>array("Type affaire"),
+			'tablib'=>array("Type affaire","Action juridique"),
 			// Request to select fields
 			'tabsql'=>array(
-				'SELECT f.rowid as rowid, f.label, f.active FROM '.MAIN_DB_PREFIX.'kjraffaire_dico_type_affaire as f'
+				'SELECT f.rowid as rowid, f.label, f.active FROM '.MAIN_DB_PREFIX.'kjraffaire_dico_type_affaire as f',
+				'SELECT f.rowid as rowid, f.label, f.active FROM '.MAIN_DB_PREFIX.'kjraffaire_dico_action_juridique as f'
 			),
 		 	// Sort order
-		 	'tabsqlsort'=>array("label ASC"),
+		 	'tabsqlsort'=>array(
+				"label ASC",
+				"label ASC",
+			),
 		 	// List of fields (result of select to show dictionary)
-		 	'tabfield'=>array("label"),
+		 	'tabfield'=>array("label","label"),
 		 	// List of fields (list of fields to edit a record)
-		 	'tabfieldvalue'=>array("label"),
+		 	'tabfieldvalue'=>array("label","label"),
 		 	// List of fields (list of fields for insert)
-		 	'tabfieldinsert'=>array("label"),
+		 	'tabfieldinsert'=>array("label","label"),
 		 	// Name of columns with primary key (try to always name it 'rowid')
-		 	'tabrowid'=>array("rowid"),
+		 	'tabrowid'=>array("rowid","rowid"),
 		 	// Condition to show each dictionary
-		 	'tabcond'=>array(isModEnabled('kjraffaire')),
+		 	'tabcond'=>array(isModEnabled('kjraffaire'), isModEnabled('kjraffaire')),
 		 	// Tooltip for every fields of dictionaries: DO NOT PUT AN EMPTY ARRAY
-		 	'tabhelp'=>array(array('code'=>$langs->trans('CodeTooltipHelp'), 'field2' => 'field2tooltip'),
+		 	'tabhelp'=>array(
+				array('code'=>$langs->trans('CodeTooltipHelp'), 'field2' => 'field2tooltip'),
+				array('code'=>$langs->trans('CodeTooltipHelp'), 'field2' => 'field2tooltip'),
 			),
 		);
 

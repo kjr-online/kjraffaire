@@ -22,3 +22,30 @@ insert into llx_kjraffaire_dico_type_affaire(label,active) values('Client RGPD',
 insert into llx_kjraffaire_dico_type_affaire(label,active) values('Dossier client',1);
 insert into llx_kjraffaire_dico_type_affaire(label,active) values('Action',1);
 insert into llx_kjraffaire_dico_type_affaire(label,active) values('Action sociale',1);
+
+truncate table llx_kjraffaire_dico_action_juridique;
+insert into llx_kjraffaire_dico_action_juridique(label,typeaction,active) values('Action en justice au fond ("fonds")','Fonds',1);
+insert into llx_kjraffaire_dico_action_juridique(label,typeaction,active) values('Référé expertise','Référé',1);
+insert into llx_kjraffaire_dico_action_juridique(label,typeaction,active) values('Référé provision','Référé',1);
+insert into llx_kjraffaire_dico_action_juridique(label,typeaction,active) values('Référé injonction','Référé',1);
+insert into llx_kjraffaire_dico_action_juridique(label,typeaction,active) values('Référé suspension','Référé',1);
+insert into llx_kjraffaire_dico_action_juridique(label,typeaction,active) values('Injonction de payer','Référé',1);
+insert into llx_kjraffaire_dico_action_juridique(label,typeaction,active) values('Injonction de faire','Référé',1);
+insert into llx_kjraffaire_dico_action_juridique(label,typeaction,active) values('Action en responsabilité civile','Fonds',1);
+insert into llx_kjraffaire_dico_action_juridique(label,typeaction,active) values('Action en nullité','Fonds',1);
+insert into llx_kjraffaire_dico_action_juridique(label,typeaction,active) values('Action en partage','Fonds',1);
+insert into llx_kjraffaire_dico_action_juridique(label,typeaction,active) values('Action en révision','Fonds',1);
+insert into llx_kjraffaire_dico_action_juridique(label,typeaction,active) values('Plainte avec constitution de partie civile','Fonds',1);
+insert into llx_kjraffaire_dico_action_juridique(label,typeaction,active) values('Citation directe','Fonds',1);
+insert into llx_kjraffaire_dico_action_juridique(label,typeaction,active) values('Recours pour excès de pouvoir','Fonds',1);
+insert into llx_kjraffaire_dico_action_juridique(label,typeaction,active) values('Recours en responsabilité administrative','Fonds',1);
+insert into llx_kjraffaire_dico_action_juridique(label,typeaction,active) values('Action en redressement judiciaire','Fonds',1);
+insert into llx_kjraffaire_dico_action_juridique(label,typeaction,active) values('Action en liquidation judiciaire','Fonds',1);
+insert into llx_kjraffaire_dico_action_juridique(label,typeaction,active) values('Action en concurrence déloyale','Fonds',1);
+insert into llx_kjraffaire_dico_action_juridique(label,typeaction,active) values('Action en divorce','Fonds',1);
+insert into llx_kjraffaire_dico_action_juridique(label,typeaction,active) values('Action en révision de pension alimentaire','Fonds',1);
+insert into llx_kjraffaire_dico_action_juridique(label,typeaction,active) values('Action en modification de droit de garde','Fonds',1);
+insert into llx_kjraffaire_dico_action_juridique(label,typeaction,active) values('Action en bornage','Fonds',1);
+insert into llx_kjraffaire_dico_action_juridique(label,typeaction,active) values('Action en troubles du voisinage','Fonds',1);
+insert into llx_kjraffaire_dico_action_juridique(label,typeaction,active) values('Action en résiliation de bail','Fonds',1);
+
