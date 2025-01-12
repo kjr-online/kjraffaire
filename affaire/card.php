@@ -125,7 +125,7 @@ if ($reshook < 0) {
 }
 
 if (empty($reshook)) {
-	$backurlforlist = DOL_URL_ROOT.'/projet/list.php';
+	$backurlforlist = DOL_URL_ROOT.'/custom/kjraffaire/affaire/list.php';
 
 	// Cancel
 	if ($cancel) {
@@ -146,7 +146,7 @@ if (empty($reshook)) {
 			if (empty($id) && (($action != 'add' && $action != 'create') || $cancel)) {
 				$backtopage = $backurlforlist;
 			} else {
-				$backtopage = DOL_URL_ROOT.'/projet/card.php?id='.((!empty($id) && $id > 0) ? $id : '__ID__');
+				$backtopage = DOL_URL_ROOT.'/custom/kjraffaire/affaire/card.php?id='.((!empty($id) && $id > 0) ? $id : '__ID__');
 			}
 		}
 	}
@@ -515,7 +515,7 @@ if (empty($reshook)) {
 				$tmpurl = preg_replace('/__SOCID__/', (string) $object->socid, $tmpurl);
 				$urlback = $tmpurl.(preg_match('/\?/', $tmpurl) ? '&' : '?'). 'restore_lastsearch_values=1';
 			} else {
-				$urlback = DOL_URL_ROOT.'/projet/list.php?restore_lastsearch_values=1';
+				$urlback = DOL_URL_ROOT.'/custom/kjraffaire/affaire/list.php?restore_lastsearch_values=1';
 			}
 
 			header("Location: ".$urlback);
@@ -1307,7 +1307,7 @@ if ($action == 'create' && $user->hasRight('projet', 'creer')) {
 			$tmpurl = preg_replace('/__SOCID__/', (string) $object->socid, $tmpurl);
 			$linkback = '<a href="'.$tmpurl.(preg_match('/\?/', $tmpurl) ? '&' : '?'). 'restore_lastsearch_values=1">'.$langs->trans("BackToList").'</a>';
 		} else {
-			$linkback = '<a href="'.DOL_URL_ROOT.'/projet/list.php?restore_lastsearch_values=1">'.$langs->trans("BackToList").'</a>';
+			$linkback = '<a href="'.DOL_URL_ROOT.'/custom/kjraffaire/affaire/list.php?restore_lastsearch_values=1">'.$langs->trans("BackToList").'</a>';
 		}
 
 		$morehtmlref = '<div class="refidno">';
@@ -1752,8 +1752,8 @@ if ($action == 'create' && $user->hasRight('projet', 'creer')) {
 		$MAXEVENT = 10;
 
 		$morehtmlcenter = '<div class="nowraponall">';
-		$morehtmlcenter .= dolGetButtonTitle($langs->trans('FullConversation'), '', 'fa fa-comments imgforviewmode', DOL_URL_ROOT.'/projet/messaging.php?id='.$object->id);
-		$morehtmlcenter .= dolGetButtonTitle($langs->trans('FullList'), '', 'fa fa-bars imgforviewmode', DOL_URL_ROOT.'/projet/agenda.php?id='.$object->id);
+		$morehtmlcenter .= dolGetButtonTitle($langs->trans('FullConversation'), '', 'fa fa-comments imgforviewmode', DOL_URL_ROOT.'/custom/kjraffaire/affaire/messaging.php?id='.$object->id);
+		$morehtmlcenter .= dolGetButtonTitle($langs->trans('FullList'), '', 'fa fa-bars imgforviewmode', DOL_URL_ROOT.'/custom/kjraffaire/affaire/agenda.php?id='.$object->id);
 		$morehtmlcenter .= '</div>';
 
 		// List of actions on element
