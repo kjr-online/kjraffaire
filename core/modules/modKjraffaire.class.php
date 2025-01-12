@@ -220,31 +220,62 @@ class modKjraffaire extends DolibarrModules
 		$this->dictionaries=array(
 			'langs'=>'kjraffaire@kjraffaire',
 			// List of tables we want to see into dictonnary editor
-			'tabname'=>array("kjraffaire_dico_type_affaire","kjraffaire_dico_action_juridique"),
+			'tabname'=>array(
+				"kjraffaire_dico_type_affaire",
+				"kjraffaire_dico_action_juridique",
+				"kjraffaire_dico_instance"
+			),
 			// Label of tables
-			'tablib'=>array("Type affaire","Action juridique"),
+			'tablib'=>array(
+				"Type affaire",
+				"Action juridique",
+				"Instance"
+			),
 			// Request to select fields
 			'tabsql'=>array(
 				'SELECT f.rowid as rowid, f.label, f.active FROM '.MAIN_DB_PREFIX.'kjraffaire_dico_type_affaire as f',
-				'SELECT f.rowid as rowid, f.label, f.active FROM '.MAIN_DB_PREFIX.'kjraffaire_dico_action_juridique as f'
+				'SELECT f.rowid as rowid, f.label, f.active FROM '.MAIN_DB_PREFIX.'kjraffaire_dico_action_juridique as f',
+				'SELECT f.rowid as rowid, f.nom_etablissement, f.active FROM '.MAIN_DB_PREFIX.'kjraffaire_dico_instance as f'
 			),
 		 	// Sort order
 		 	'tabsqlsort'=>array(
 				"label ASC",
 				"label ASC",
+				"nom_etablissement ASC",
 			),
 		 	// List of fields (result of select to show dictionary)
-		 	'tabfield'=>array("label","label"),
+		 	'tabfield'=>array(
+				"label",
+				"label",
+				"nom_etablissement"
+			),
 		 	// List of fields (list of fields to edit a record)
-		 	'tabfieldvalue'=>array("label","label"),
+		 	'tabfieldvalue'=>array(
+				"label",
+				"label",
+				"nom_etablissement"
+			),
 		 	// List of fields (list of fields for insert)
-		 	'tabfieldinsert'=>array("label","label"),
+		 	'tabfieldinsert'=>array(
+				"label",
+				"label",
+				"nom_etablissement"
+			),
 		 	// Name of columns with primary key (try to always name it 'rowid')
-		 	'tabrowid'=>array("rowid","rowid"),
+		 	'tabrowid'=>array(
+				"rowid",
+				"rowid",
+				"rowid"
+			),
 		 	// Condition to show each dictionary
-		 	'tabcond'=>array(isModEnabled('kjraffaire'), isModEnabled('kjraffaire')),
+		 	'tabcond'=>array(
+				isModEnabled('kjraffaire'), 
+				isModEnabled('kjraffaire'),
+				isModEnabled('kjraffaire')
+			),
 		 	// Tooltip for every fields of dictionaries: DO NOT PUT AN EMPTY ARRAY
 		 	'tabhelp'=>array(
+				array('code'=>$langs->trans('CodeTooltipHelp'), 'field2' => 'field2tooltip'),
 				array('code'=>$langs->trans('CodeTooltipHelp'), 'field2' => 'field2tooltip'),
 				array('code'=>$langs->trans('CodeTooltipHelp'), 'field2' => 'field2tooltip'),
 			),
