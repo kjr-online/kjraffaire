@@ -389,7 +389,7 @@ class modKjraffaire extends DolibarrModules
 	 */
 	public function init($options = '')
 	{
-		global $conf, $langs;
+		global $conf, $langs, $db;
 
 		//$result = $this->_load_tables('/install/mysql/', 'kjraffaire');
 		$result = $this->_load_tables('/kjraffaire/sql/');
@@ -413,6 +413,45 @@ class modKjraffaire extends DolibarrModules
 		// Permissions
 		$this->remove($options);
 
+		
+		// Activation automatique modules
+
+		require_once DOL_DOCUMENT_ROOT.'/core/modules/modAgenda.class.php';
+		require_once DOL_DOCUMENT_ROOT.'/core/modules/modProjet.class.php';
+		require_once DOL_DOCUMENT_ROOT.'/core/modules/modSociete.class.php';
+		require_once DOL_DOCUMENT_ROOT.'/core/modules/modFacture.class.php';
+		require_once DOL_DOCUMENT_ROOT.'/core/modules/modService.class.php';
+
+		// --- Module Agenda ---
+		dolibarr_set_const($db, 'MAIN_MODULE_AGENDA', '1', 'yesno', 0, '', $conf->entity);
+		$conf->global->MAIN_MODULE_AGENDA = 1;
+		$agenda = new modAgenda($db);
+		$agenda->init();
+	
+		// --- Module Projet ---
+		dolibarr_set_const($db, 'MAIN_MODULE_PROJET', '1', 'yesno', 0, '', $conf->entity);
+		$conf->global->MAIN_MODULE_PROJECT = 1;
+		$proj = new modProjet($db);
+		$proj->init();
+	
+		// --- Module Tiers ---
+		dolibarr_set_const($db, 'MAIN_MODULE_SOCIETE', '1', 'yesno', 0, '', $conf->entity);
+		$conf->global->MAIN_MODULE_SOCIETE = 1;
+		$soc = new modSociete($db);
+		$soc->init();
+	
+		// --- Module Factures / Avoirs ---
+		dolibarr_set_const($db, 'MAIN_MODULE_FACTURE', '1', 'yesno', 0, '', $conf->entity);
+		$conf->global->MAIN_MODULE_FACTURE = 1;
+		$fact = new modFacture($db);
+		$fact->init();
+	
+		// --- Module Services ---
+		dolibarr_set_const($db, 'MAIN_MODULE_SERVICE', '1', 'yesno', 0, '', $conf->entity);
+		$conf->global->MAIN_MODULE_SERVICE = 1;
+		$serv = new modService($db);
+		$serv->init();
+		
 		$sql = array();
 
 		// Document templates
