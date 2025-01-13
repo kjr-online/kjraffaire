@@ -106,6 +106,18 @@ class ActionsKjraffaire extends CommonHookActions
 
 		$error = 0; // Error counter
 
+        // Il ne faut pas pouvoir les extrafields des affaires dans les listes de projets
+        global $arrayfields,$contextpage;
+        $extrafields_to_exclude = ['ef.type_affaire'];
+		var_dump($_SERVER['PHP_SELF']);
+		if (!preg_match('/kjraffaire/', $_SERVER['PHP_SELF'])){
+            foreach ($extrafields_to_exclude as $field) {
+                if (isset($arrayfields[$field])) {
+                    unset($arrayfields[$field]); 
+                }
+            }
+        }
+
 		/* print_r($parameters); print_r($object); echo "action: " . $action; */
 		if (in_array($parameters['currentcontext'], array('somecontext1', 'somecontext2'))) {	    // do something only for the context 'somecontext1' or 'somecontext2'
 			// Do what you want here...
@@ -373,4 +385,19 @@ class ActionsKjraffaire extends CommonHookActions
 	}
 
 	/* Add here any other hooked methods... */
+    function printFieldListWhere($parameters, &$object, &$action, $hookmanager)
+    {
+        $error = 0; // Error counter
+
+        //print_r($parameters['context']);exit;
+		if (!preg_match('/kjraffaire/', $_SERVER['PHP_SELF'])){
+			if (in_array('projectlist', explode(':', $parameters['context']))) {
+				//pas bon car ajoute le code JS en debut de page...utilisation de printCommonFooter()
+				$this->resprints = ' AND (isnull(ef.affaire) or ef.affaire<>1) ';
+				return 0;
+			}	
+		}
+        return 0;
+    }
+
 }
