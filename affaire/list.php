@@ -575,6 +575,8 @@ if (!$user->hasRight('projet', 'all', 'lire')) {
 if ($socid > 0) {
 	$sql .= " AND (p.fk_soc = ".((int) $socid).")"; // This filter if when we use a hard coded filter on company on url (not related to filter for external users)
 }
+// Condition pour afficher uniquement les affaires
+$sql .= " AND ef.affaire = 1";
 if ($search_ref) {
 	$sql .= natural_search('p.ref', $search_ref);
 }
