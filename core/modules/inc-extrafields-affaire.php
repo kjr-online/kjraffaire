@@ -35,8 +35,8 @@ $result = $extrafields->addExtraField(
     '',
     '',
     '1',
-    '',
-    '1',
+    'kjraffaire@kjraffaire',
+    'isModEnabled("kjraffaire")',
     0,
     1
 );
