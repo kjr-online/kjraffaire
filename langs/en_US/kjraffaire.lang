@@ -40,3 +40,5 @@ MyPageName = My page name
 #
 MyWidget = My widget
 MyWidgetDescription = My widget description
+
+MyAffairesDesc = This view displays all cases

@@ -485,7 +485,7 @@ $formproject = new FormProjets($db);
 $userstatic = new User($db);
 
 $help_url = "EN:Module_Projects|FR:Module_Projets|ES:M&oacute;dulo_Proyectos";
-$title = $langs->trans("LeadsOrProjects");
+$title = $langs->trans("ModuleKjraffaireName");
 if (!getDolGlobalString('PROJECT_USE_OPPORTUNITIES')) {
 	$title = $langs->trans("Projects");
 }
@@ -1076,7 +1076,7 @@ print '<input type="hidden" name="groupby" value="'.$groupby.'">';
 // Show description of content
 $texthelp = '';
 if ($search_project_user == $user->id) {
-	$texthelp .= $langs->trans("MyProjectsDesc");
+	$texthelp .= $langs->trans("MyAffairesDesc");
 } else {
 	if ($user->hasRight('projet', 'all', 'lire') && !$socid) {
 		$texthelp .= $langs->trans("ProjectsDesc");
