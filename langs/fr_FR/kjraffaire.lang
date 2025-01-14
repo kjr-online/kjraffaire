@@ -42,3 +42,4 @@ MyWidget = My widget
 MyWidgetDescription = My widget description
 
 MyAffairesDesc = Cette vue affiche toutes les affaires
+AffaireContact = Contacts de l'affaire

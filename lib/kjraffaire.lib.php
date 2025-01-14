@@ -103,7 +103,7 @@ function affaire_prepare_head(Project $project, $moreparam = '')
 		dol_setcache($cachekey, $nbContacts, 120);	// If setting cache fails, this is not a problem, so we do not test result.
 	}
 	$head[$h][0] = DOL_URL_ROOT.'/custom/kjraffaire/affaire/contact.php?id='.((int) $project->id).($moreparam ? '&'.$moreparam : '');
-	$head[$h][1] = $langs->trans("ProjectContact");
+	$head[$h][1] = $langs->trans("AffaireContact");
 	if ($nbContacts > 0) {
 		$head[$h][1] .= '<span class="badge marginleftonlyshort">'.$nbContacts.'</span>';
 	}
