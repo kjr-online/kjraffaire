@@ -382,46 +382,43 @@ if ($id > 0 || !empty($ref)) {
 
 	print '<table class="border tableforfield centpercent">';
 
-	// Usage
-	if (getDolGlobalString('PROJECT_USE_OPPORTUNITIES') || !getDolGlobalString('PROJECT_HIDE_TASKS') || isModEnabled('eventorganization')) {
-		print '<tr><td class="tdtop">';
-		print $langs->trans("Usage");
-		print '</td>';
-		print '<td>';
-		if (getDolGlobalString('PROJECT_USE_OPPORTUNITIES')) {
-			print '<input type="checkbox" disabled name="usage_opportunity"'.(GETPOSTISSET('usage_opportunity') ? (GETPOST('usage_opportunity', 'alpha') != '' ? ' checked="checked"' : '') : ($object->usage_opportunity ? ' checked="checked"' : '')).'"> ';
-			$htmltext = $langs->trans("ProjectFollowOpportunity");
-			print $form->textwithpicto($langs->trans("ProjectFollowOpportunity"), $htmltext);
-			print '<br>';
-		}
-		if (!getDolGlobalString('PROJECT_HIDE_TASKS')) {
-			print '<input type="checkbox" disabled name="usage_task"'.(GETPOSTISSET('usage_task') ? (GETPOST('usage_task', 'alpha') != '' ? ' checked="checked"' : '') : ($object->usage_task ? ' checked="checked"' : '')).'"> ';
-			$htmltext = $langs->trans("ProjectFollowTasks");
-			print $form->textwithpicto($langs->trans("ProjectFollowTasks"), $htmltext);
-			print '<br>';
-		}
-		if (!getDolGlobalString('PROJECT_HIDE_TASKS') && getDolGlobalString('PROJECT_BILL_TIME_SPENT')) {
-			print '<input type="checkbox" disabled name="usage_bill_time"'.(GETPOSTISSET('usage_bill_time') ? (GETPOST('usage_bill_time', 'alpha') != '' ? ' checked="checked"' : '') : ($object->usage_bill_time ? ' checked="checked"' : '')).'"> ';
-			$htmltext = $langs->trans("ProjectBillTimeDescription");
-			print $form->textwithpicto($langs->trans("BillTime"), $htmltext);
-			print '<br>';
-		}
-		if (isModEnabled('eventorganization')) {
-			print '<input type="checkbox" disabled name="usage_organize_event"'.(GETPOSTISSET('usage_organize_event') ? (GETPOST('usage_organize_event', 'alpha') != '' ? ' checked="checked"' : '') : ($object->usage_organize_event ? ' checked="checked"' : '')).'"> ';
-			$htmltext = $langs->trans("EventOrganizationDescriptionLong");
-			print $form->textwithpicto($langs->trans("ManageOrganizeEvent"), $htmltext);
-		}
-		print '</td></tr>';
-	}
 
 	// Visibility
 	print '<tr><td class="titlefield">'.$langs->trans("Visibility").'</td><td>';
-	if ($object->public) {
+	if ($object->public == 1) {
 		print img_picto($langs->trans('SharedProject'), 'world', 'class="paddingrightonly"');
 		print $langs->trans('SharedProject');
-	} else {
+	} elseif ($object->public == 0) {
 		print img_picto($langs->trans('PrivateProject'), 'private', 'class="paddingrightonly"');
 		print $langs->trans('PrivateProject');
+	} elseif ($object->public == 2) {
+		print img_picto($langs->trans('Group'), 'group', 'class="paddingrightonly"');
+		print '<i><u>' . $langs->trans('Group') . ':' . '</u></i> ';
+		
+		// Récupération des groupes associés
+		$group_names = [];
+		$sql = "SELECT group_id FROM ".MAIN_DB_PREFIX."kjraffaire_visibility_group WHERE affaire_id = ".$db->escape($object->id);
+		$resql = $db->query($sql);
+		if ($resql) {
+			$obj = $db->fetch_object($resql);
+			if ($obj && !empty($obj->group_id)) {
+				$group_ids = explode(';', $obj->group_id);
+				$sql_groups = "SELECT nom FROM ".MAIN_DB_PREFIX."usergroup WHERE rowid IN (".implode(',', array_map('intval', $group_ids)).")";
+				$resql_groups = $db->query($sql_groups);
+				if ($resql_groups) {
+					while ($group = $db->fetch_object($resql_groups)) {
+						$group_names[] = $group->nom;
+					}
+				}
+			}
+		}
+
+		// Affichage des noms de groupes
+		if (!empty($group_names)) {
+			print implode(', ', $group_names);
+		} else {
+			print $langs->trans("NoGroupAssigned");
+		}
 	}
 	print '</td></tr>';
 
@@ -450,25 +447,6 @@ if ($id > 0 || !empty($ref)) {
 		}
 		print '</td></tr>';
 	}
-
-	// Budget
-	print '<tr><td>'.$langs->trans("Budget").'</td><td>';
-	if (!is_null($object->budget_amount) && strcmp($object->budget_amount, '')) {
-		print '<span class="amount">'.price($object->budget_amount, 0, $langs, 1, 0, 0, $conf->currency).'</span>';
-	}
-	print '</td></tr>';
-
-	// Date start - end project
-	print '<tr><td>'.$langs->trans("Dates").'</td><td>';
-	$start = dol_print_date($object->date_start, 'day');
-	print($start ? $start : '?');
-	$end = dol_print_date($object->date_end, 'day');
-	print ' <span class="opacitymedium">-</span> ';
-	print($end ? $end : '?');
-	if ($object->hasDelay()) {
-		print img_warning("Late");
-	}
-	print '</td></tr>';
 
 	// Other attributes
 	$cols = 2;
