@@ -1309,39 +1309,6 @@ if ($action == 'create' && $user->hasRight('projet', 'creer')) {
 
 		print '<table class="border tableforfield centpercent">';
 
-		// Usage
-		if (getDolGlobalString('PROJECT_USE_OPPORTUNITIES') || !getDolGlobalString('PROJECT_HIDE_TASKS') || isModEnabled('eventorganization')) {
-			print '<tr><td class="tdtop">';
-			print $langs->trans("Usage");
-			print '</td>';
-			print '<td>';
-			if (getDolGlobalString('PROJECT_USE_OPPORTUNITIES')) {
-				print '<input type="checkbox" disabled name="usage_opportunity"'.(GETPOSTISSET('usage_opportunity') ? (GETPOST('usage_opportunity', 'alpha') != '' ? ' checked="checked"' : '') : ($object->usage_opportunity ? ' checked="checked"' : '')).'> ';
-				$htmltext = $langs->trans("ProjectFollowOpportunity");
-				print $form->textwithpicto($langs->trans("ProjectFollowOpportunity"), $htmltext);
-				print '<br>';
-			}
-			if (!getDolGlobalString('PROJECT_HIDE_TASKS')) {
-				print '<input type="checkbox" disabled name="usage_task"'.(GETPOSTISSET('usage_task') ? (GETPOST('usage_task', 'alpha') != '' ? ' checked="checked"' : '') : ($object->usage_task ? ' checked="checked"' : '')).'> ';
-				$htmltext = $langs->trans("ProjectFollowTasks");
-				print $form->textwithpicto($langs->trans("ProjectFollowTasks"), $htmltext);
-				print '<br>';
-			}
-			if (!getDolGlobalString('PROJECT_HIDE_TASKS') && getDolGlobalString('PROJECT_BILL_TIME_SPENT')) {
-				print '<input type="checkbox" disabled name="usage_bill_time"'.(GETPOSTISSET('usage_bill_time') ? (GETPOST('usage_bill_time', 'alpha') != '' ? ' checked="checked"' : '') : ($object->usage_bill_time ? ' checked="checked"' : '')).'> ';
-				$htmltext = $langs->trans("ProjectBillTimeDescription");
-				print $form->textwithpicto($langs->trans("BillTime"), $htmltext);
-				print '<br>';
-			}
-
-			if (isModEnabled('eventorganization')) {
-				print '<input type="checkbox" disabled name="usage_organize_event"'.(GETPOSTISSET('usage_organize_event') ? (GETPOST('usage_organize_event', 'alpha') != '' ? ' checked="checked"' : '') : ($object->usage_organize_event ? ' checked="checked"' : '')).'> ';
-				$htmltext = $langs->trans("EventOrganizationDescriptionLong");
-				print $form->textwithpicto($langs->trans("ManageOrganizeEvent"), $htmltext);
-			}
-			print '</td></tr>';
-		}
-
 		// Visibility
 		print '<tr><td class="titlefield">'.$langs->trans("Visibility").'</td><td>';
 		if ($object->public == 1) {
@@ -1404,25 +1371,6 @@ if ($action == 'create' && $user->hasRight('projet', 'creer')) {
 			}
 			print '</td></tr>';
 		}
-
-		// Budget
-		print '<tr><td>'.$langs->trans("Budget").'</td><td>';
-		if (!is_null($object->budget_amount) && strcmp($object->budget_amount, '')) {
-			print '<span class="amount">'.price($object->budget_amount, 0, $langs, 1, 0, 0, $conf->currency).'</span>';
-		}
-		print '</td></tr>';
-
-		// Date start - end project
-		print '<tr><td>'.$langs->trans("Dates").'</td><td>';
-		$start = dol_print_date($object->date_start, 'day');
-		print($start ? $start : '?');
-		$end = dol_print_date($object->date_end, 'day');
-		print ' <span class="opacitymedium">-</span> ';
-		print($end ? $end : '?');
-		if ($object->hasDelay()) {
-			print img_warning("Late");
-		}
-		print '</td></tr>';
 
 		// Other attributes
 		$cols = 2;
