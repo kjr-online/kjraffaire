@@ -349,6 +349,37 @@ if (empty($reshook)) {
 			if ($ret < 0) {
 				$error++;
 			}
+
+			$public = GETPOST('public', 'alpha');
+			$selected_groups = GETPOST('public_group', 'array');
+			$group_ids = $selected_groups ? implode(';', $selected_groups) : '';
+
+			if ($public == '0' || $public == '1') {
+				$sql = "DELETE FROM ".MAIN_DB_PREFIX."kjraffaire_visibility_group WHERE affaire_id = ".$db->escape($object->id);
+				if (!$db->query($sql)) {
+					$error++;
+					setEventMessages($langs->trans("ErrorWhileDeletingVisibilityGroup"), null, 'errors');
+				}
+			} elseif ($public == '2') {
+				$sql = "SELECT rowid FROM ".MAIN_DB_PREFIX."kjraffaire_visibility_group WHERE affaire_id = ".$db->escape($object->id);
+				$resql = $db->query($sql);
+				if ($resql && $db->num_rows($resql) > 0) {
+					$sql = "UPDATE ".MAIN_DB_PREFIX."kjraffaire_visibility_group 
+							SET group_id = '".$db->escape($group_ids)."' 
+							WHERE affaire_id = ".$db->escape($object->id);
+					if (!$db->query($sql)) {
+						$error++;
+						setEventMessages($langs->trans("ErrorWhileUpdatingVisibilityGroup"), null, 'errors');
+					}
+				} else {
+					$sql = "INSERT INTO ".MAIN_DB_PREFIX."kjraffaire_visibility_group (affaire_id, group_id) 
+							VALUES (".$db->escape($object->id).", '".$db->escape($group_ids)."')";
+					if (!$db->query($sql)) {
+						$error++;
+						setEventMessages($langs->trans("ErrorWhileInsertingVisibilityGroup"), null, 'errors');
+					}
+				}
+			}
 		}
 
 		if (getDolGlobalString('PROJECT_USE_OPPORTUNITIES')) {
@@ -403,6 +434,13 @@ if (empty($reshook)) {
 			$action = 'edit';
 		} else {
 			$db->commit();
+			if ($object->public == 2) {
+				$sql = "UPDATE ".MAIN_DB_PREFIX."projet SET public = 2 WHERE rowid = ".$db->escape($object->id);
+				if (!$db->query($sql)) {
+					setEventMessages($langs->trans("ErrorWhileUpdatingProjectPublic"), null, 'errors');
+					$error++;
+				}
+			}
 
 			if (GETPOSTINT('socid') > 0) {
 				$object->fetch_thirdparty(GETPOSTINT('socid'));
@@ -704,6 +742,9 @@ if ($action == 'create' && $user->hasRight('projet', 'creer')) {
 		print $object->LibStatut($status, 4);
 		print '</td></tr>';
 	}
+
+	// Mettre extrafield 'affaire' à 1
+	$object->array_options['options_affaire'] = 1;
 
 	// Visibility
 	print '<tr><td>'.$langs->trans("Visibility").'</td><td class="maxwidthonsmartphone">';
@@ -1055,7 +1096,65 @@ if ($action == 'create' && $user->hasRight('projet', 'creer')) {
 		}
 
 		if (count($array) > 0) {
+			// Ajout option "Groupe"
+			$array[2] = $langs->trans("Group");
+		
+			// Récupération des groupes users
+			$group_array = array();
+			$sql = "SELECT rowid, nom FROM ".MAIN_DB_PREFIX."usergroup WHERE entity = ".$conf->entity;
+			$resql = $db->query($sql);
+			if ($resql) {
+				while ($obj = $db->fetch_object($resql)) {
+					$group_array[$obj->rowid] = $obj->nom;
+				}
+			} else {
+				dol_print_error($db);
+			}
+
+			// Récupération des groupes sélectionnés
+			$selected_groups = array();
+			$sql = "SELECT group_id FROM ".MAIN_DB_PREFIX."kjraffaire_visibility_group WHERE affaire_id = ".$db->escape($object->id);
+			$resql = $db->query($sql);
+			if ($resql) {
+				$obj = $db->fetch_object($resql);
+				if ($obj && !empty($obj->group_id)) {
+					$selected_groups = explode(';', $obj->group_id);
+				}
+			} else {
+				dol_print_error($db);
+			}
+
+			print '<div style="display: flex; align-items: center; gap: 10px;">';
+
+			print '<div id="select_public_container" style="flex: 1;">';
 			print $form->selectarray('public', $array, $object->public, 0, 0, 0, '', 0, 0, 0, '', '', 1);
+			print '</div>';
+
+			// Multiselect pour les groupes (caché par défaut)
+			print '<div id="multiselect_group_container" style="flex: 2; display: none;">';
+			print $form->multiselectarray('public_group', $group_array, $selected_groups, 0, 0, 'width250', 0, 0, '', '', '', 1);
+			print '</div>';
+
+			print '</div>';
+		
+			// Afficher/masquer dynamiquement le multiselect
+			print '<script>
+				$(document).ready(function() {
+					function toggleGroupSelect() {
+						if ($("#public").val() == "2") {
+							$("#multiselect_group_container").show();
+						} else {
+							$("#multiselect_group_container").hide();
+						}
+					}
+
+					toggleGroupSelect();
+
+					$("#public").change(function() {
+						toggleGroupSelect();
+					});
+				});
+			</script>';
 		} else {
 			print '<input type="hidden" id="public" name="public" value="'.$object->public.'">';
 
@@ -1245,12 +1344,40 @@ if ($action == 'create' && $user->hasRight('projet', 'creer')) {
 
 		// Visibility
 		print '<tr><td class="titlefield">'.$langs->trans("Visibility").'</td><td>';
-		if ($object->public) {
+		if ($object->public == 1) {
 			print img_picto($langs->trans('SharedProject'), 'world', 'class="paddingrightonly"');
 			print $langs->trans('SharedProject');
-		} else {
+		} elseif ($object->public == 0) {
 			print img_picto($langs->trans('PrivateProject'), 'private', 'class="paddingrightonly"');
 			print $langs->trans('PrivateProject');
+		} elseif ($object->public == 2) {
+			print img_picto($langs->trans('Group'), 'group', 'class="paddingrightonly"');
+			print '<i><u>' . $langs->trans('Group') . ':' . '</u></i> ';
+			
+			// Récupération des groupes associés
+			$group_names = [];
+			$sql = "SELECT group_id FROM ".MAIN_DB_PREFIX."kjraffaire_visibility_group WHERE affaire_id = ".$db->escape($object->id);
+			$resql = $db->query($sql);
+			if ($resql) {
+				$obj = $db->fetch_object($resql);
+				if ($obj && !empty($obj->group_id)) {
+					$group_ids = explode(';', $obj->group_id);
+					$sql_groups = "SELECT nom FROM ".MAIN_DB_PREFIX."usergroup WHERE rowid IN (".implode(',', array_map('intval', $group_ids)).")";
+					$resql_groups = $db->query($sql_groups);
+					if ($resql_groups) {
+						while ($group = $db->fetch_object($resql_groups)) {
+							$group_names[] = $group->nom;
+						}
+					}
+				}
+			}
+
+			// Affichage des noms de groupes
+			if (!empty($group_names)) {
+				print implode(', ', $group_names);
+			} else {
+				print $langs->trans("NoGroupAssigned");
+			}
 		}
 		print '</td></tr>';
 

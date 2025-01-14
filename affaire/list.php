@@ -496,10 +496,42 @@ $morejs = array();
 $morecss = array();
 
 
-// Get list of project id allowed to user (in a string list separated by comma)
 $projectsListId = '';
 if (!$user->hasRight('projet', 'all', 'lire')) {
-	$projectsListId = $object->getProjectsAuthorizedForUser($user, 0, 1, $socid);
+    // Récupération des projets autorisés pour l'utilisateur
+    $projectsListId = $object->getProjectsAuthorizedForUser($user, 0, 1, $socid);
+
+    // Récupération des groupes auxquels appartient l'utilisateur
+    $userGroupIds = array();
+    $sqlGroups = "SELECT fk_usergroup FROM ".MAIN_DB_PREFIX."usergroup_user WHERE fk_user = ".$user->id;
+    $resqlGroups = $db->query($sqlGroups);
+    if ($resqlGroups) {
+        while ($objGroup = $db->fetch_object($resqlGroups)) {
+            $userGroupIds[] = $objGroup->fk_usergroup;
+        }
+    } else {
+        dol_print_error($db);
+    }
+
+    if (!empty($userGroupIds)) {
+        $conditions = array();
+        foreach ($userGroupIds as $groupId) {
+            $conditions[] = "group_id LIKE '%;".$db->escape($groupId)."%' OR group_id LIKE '".$db->escape($groupId).";%' OR group_id LIKE '%;".$db->escape($groupId).";%' OR group_id = '".$db->escape($groupId)."'";
+        }
+
+        if (!empty($conditions)) {
+            $sqlGroupProjects = "SELECT affaire_id FROM ".MAIN_DB_PREFIX."kjraffaire_visibility_group 
+                                 WHERE (".implode(' OR ', $conditions).")";
+            $resqlProjects = $db->query($sqlGroupProjects);
+            if ($resqlProjects) {
+                while ($obj = $db->fetch_object($resqlProjects)) {
+                    $projectsListId .= ($projectsListId ? ',' : '') . $obj->affaire_id;
+                }
+            } else {
+                dol_print_error($db);
+            }
+        }
+    }
 }
 
 // Get id of types of contacts for projects (This list never contains a lot of elements)
@@ -1202,10 +1234,15 @@ if (!empty($arrayfields['s.name_alias']['checked'])) {
 }
 // Visibility
 if (!empty($arrayfields['p.public']['checked'])) {
-	print '<td class="liste_titre center">';
-	$array = array('' => '', 0 => $langs->trans("PrivateProject"), 1 => $langs->trans("SharedProject"));
-	print $form->selectarray('search_public', $array, $search_public, 0, 0, 0, '', 0, 0, 0, '', 'maxwidth75');
-	print '</td>';
+    print '<td class="liste_titre center">';
+    $array = array(
+        '' => '', 
+        0 => $langs->trans("PrivateProject"),
+        1 => $langs->trans("SharedProject"),
+        2 => $langs->trans("Group")
+    );
+    print $form->selectarray('search_public', $array, $search_public, 0, 0, 0, '', 0, 0, 0, '', 'maxwidth75');
+    print '</td>';
 }
 if (!empty($arrayfields['c.assigned']['checked'])) {
 	print '<td class="liste_titre center">';
@@ -1613,13 +1650,18 @@ while ($i < $imaxinloop) {
 				$totalarray['nbfield']++;
 			}
 		}
-		// Project url
+		// Affaire url
 		if (!empty($arrayfields['p.ref']['checked'])) {
 			print '<td class="nowraponall tdoverflowmax200">';
-			print $object->getNomUrl(1, (!empty(GETPOSTINT('search_usage_event_organization')) ? 'eventorganization' : ''));
-			if ($object->hasDelay()) {
-				print img_warning($langs->trans('Late'));
-			}
+
+			// Determiner l'icône en fonction de la visibilité
+			$icon = $object->public == 1 ? 'object_affaire_shared' : ($object->public == 0 ? 'object_affaire_private' : 'object_affaire_group');
+
+			$url = dol_buildpath('/custom/kjraffaire/affaire/card.php', 1) . '?id=' . $object->id . '&save_lastsearch_values=1';
+
+			print img_picto('', $icon, 'class="paddingrightonly valignmiddle"');
+			print '<a href="'.$url.'">'.htmlspecialchars($object->ref).'</a>';
+
 			print '</td>';
 			if (!$i) {
 				$totalarray['nbfield']++;
@@ -1664,12 +1706,31 @@ while ($i < $imaxinloop) {
 		// Visibility
 		if (!empty($arrayfields['p.public']['checked'])) {
 			print '<td class="center">';
-			if ($obj->public) {
+			
+			if ($obj->public == 1) {
 				print img_picto($langs->trans('SharedProject'), 'world', 'class="paddingrightonly"');
-				//print $langs->trans('SharedProject');
-			} else {
+			} elseif ($obj->public == 0) {
 				print img_picto($langs->trans('PrivateProject'), 'private', 'class="paddingrightonly"');
-				//print $langs->trans('PrivateProject');
+			} elseif ($obj->public == 2) {
+				print img_picto($langs->trans('Group'), 'group', 'class="paddingrightonly"');
+				
+				// Récupération des groupes associés
+				$group_names = [];
+				$sql = "SELECT group_id FROM ".MAIN_DB_PREFIX."kjraffaire_visibility_group WHERE affaire_id = ".$db->escape($obj->rowid);
+				$resql = $db->query($sql);
+				if ($resql) {
+					$record = $db->fetch_object($resql);
+					if ($record && !empty($record->group_id)) {
+						$group_ids = explode(';', $record->group_id);
+						$sql_groups = "SELECT nom FROM ".MAIN_DB_PREFIX."usergroup WHERE rowid IN (".implode(',', array_map('intval', $group_ids)).")";
+						$resql_groups = $db->query($sql_groups);
+						if ($resql_groups) {
+							while ($group = $db->fetch_object($resql_groups)) {
+								$group_names[] = $group->nom;
+							}
+						}
+					}
+				}
 			}
 			print '</td>';
 			if (!$i) {
