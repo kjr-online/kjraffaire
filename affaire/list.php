@@ -1116,7 +1116,7 @@ if ($search_project_user == $user->id) {
 	}
 }
 
-print_barre_liste($form->textwithpicto($title, $texthelp), $page, $_SERVER["PHP_SELF"], $param, $sortfield, $sortorder, $massactionbutton, $num, $nbtotalofrecords, 'project', 0, $newcardbutton, '', $limit, 0, 0, 1);
+print_barre_liste($form->textwithpicto($title, $texthelp), $page, $_SERVER["PHP_SELF"], $param, $sortfield, $sortorder, $massactionbutton, $num, $nbtotalofrecords, 'fa-briefcase', 0, $newcardbutton, '', $limit, 0, 0, 1);
 
 
 $topicmail = "Information";
@@ -1653,12 +1653,15 @@ while ($i < $imaxinloop) {
 		if (!empty($arrayfields['p.ref']['checked'])) {
 			print '<td class="nowraponall tdoverflowmax200">';
 
-			// Determiner l'icône en fonction de la visibilité
-			$icon = $object->public == 1 ? 'object_affaire_shared' : ($object->public == 0 ? 'object_affaire_private' : 'object_affaire_group');
+			$iconStyle = $object->public == 1 
+				? 'color: #986C6A;'
+				: ($object->public == 0 
+					? 'color: #6C6AA8;'
+					: 'color: #6CA89C;');
 
 			$url = dol_buildpath('/custom/kjraffaire/affaire/card.php', 1) . '?id=' . $object->id . '&save_lastsearch_values=1';
 
-			print img_picto('', $icon, 'class="paddingrightonly valignmiddle"');
+			print '<i class="fas fa-briefcase paddingrightonly valignmiddle" style="'.$iconStyle.'"></i>';
 			print '<a href="'.$url.'">'.htmlspecialchars($object->ref).'</a>';
 
 			print '</td>';
@@ -1711,7 +1714,7 @@ while ($i < $imaxinloop) {
 			} elseif ($obj->public == 0) {
 				print img_picto($langs->trans('PrivateProject'), 'private', 'class="paddingrightonly"');
 			} elseif ($obj->public == 2) {
-				print img_picto($langs->trans('Group'), 'group', 'class="paddingrightonly"');
+				print img_picto($langs->trans('Group'), 'group', 'class="paddingrightonly" style="color: #6CA89C;"');
 				
 				// Récupération des groupes associés
 				$group_names = [];

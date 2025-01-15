@@ -1265,9 +1265,9 @@ if ($action == 'create' && $user->hasRight('projet', 'creer')) {
 
 		print '</table>';
 	} else {
-		print dol_get_fiche_head($head, 'project', $langs->trans("Project"), -1, ($object->public ? 'projectpub' : 'project'));
+		print dol_get_fiche_head($head, 'project', $langs->trans("Project"), -1, ($object->public ? 'fa-briefcase' : 'fa-briefcase'));
 
-		// Project card
+		// Affaire card
 
 		if (!empty($_SESSION['pageforbacktolist']) && !empty($_SESSION['pageforbacktolist']['project'])) {
 			$tmpurl = $_SESSION['pageforbacktolist']['project'];
@@ -1318,7 +1318,7 @@ if ($action == 'create' && $user->hasRight('projet', 'creer')) {
 			print img_picto($langs->trans('PrivateProject'), 'private', 'class="paddingrightonly"');
 			print $langs->trans('PrivateProject');
 		} elseif ($object->public == 2) {
-			print img_picto($langs->trans('Group'), 'group', 'class="paddingrightonly"');
+			print img_picto($langs->trans('Group'), 'group', 'class="paddingrightonly" style="color: #6CA89C;"');
 			print '<i><u>' . $langs->trans('Group') . ':' . '</u></i> ';
 			
 			// Récupération des groupes associés
