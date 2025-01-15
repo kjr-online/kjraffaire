@@ -6,6 +6,9 @@
 
 # Module label 'ModuleKjraffaireName'
 ModuleKjraffaireName = Affaires
+kjraffaire = Affaires
+Fk_type_contact = Type parent
+Parent_type = Type parent
 # Module description 'ModuleKjraffaireDesc'
 ModuleKjraffaireDesc = Gestion par affaires
 
@@ -43,3 +46,4 @@ MyWidgetDescription = My widget description
 
 MyAffairesDesc = Cette vue affiche toutes les affaires
 AffaireContact = Contacts de l'affaire
+EnterReference = Saisir référence

@@ -167,6 +167,7 @@ if (empty($reshook)) {
 			exit;
 		}
 
+		$reference = GETPOST('reference', 'alpha');
 		$contactid = (GETPOST('userid') ? GETPOSTINT('userid') : GETPOSTINT('contactid'));
 		$typeid = (GETPOST('typecontact') ? GETPOST('typecontact') : GETPOST('type'));
 		$groupid = GETPOSTINT('groupid');
@@ -269,9 +270,60 @@ if (empty($reshook)) {
 		}
 
 		if ($result >= 0) {
+			$idElementContact = null; // Initialiser la variable
+
+			if (!empty($reference) || GETPOST('subtype_contact', 'int') > 0) {
+				// Récupérer le rowid du contact ajouté dans llx_element_contact
+				$sql = "SELECT rowid FROM ".MAIN_DB_PREFIX."element_contact 
+						WHERE element_id = ".$db->escape($object->id)." 
+						AND fk_socpeople = ".$db->escape($contactid)." 
+						AND fk_c_type_contact = ".$db->escape($typeid)." 
+						ORDER BY rowid DESC LIMIT 1";
+				$resql = $db->query($sql);
+
+				if ($resql && ($obj = $db->fetch_object($resql))) {
+					$idElementContact = $obj->rowid;
+				} else {
+					setEventMessages("Error: Unable to fetch id_element_contact.", null, 'errors');
+				}
+			}
+
+			// Insertion dans kjraffaire_souselement_reference si une référence est définie
+			if (!empty($reference)) {
+				if ($idElementContact !== null) {
+					$sql = "INSERT INTO ".MAIN_DB_PREFIX."kjraffaire_souselement_reference (id_element_contact, reference)
+							VALUES (".$db->escape($idElementContact).", '".$db->escape($reference)."')";
+					$resql = $db->query($sql);
+					if (!$resql) {
+						setEventMessages($db->lasterror(), null, 'errors');
+					}
+				} else {
+					setEventMessages("Error: Unable to determine id_element_contact for reference insertion.", null, 'errors');
+				}
+			}
+
+			// Insertion dans kjraffaire_souselement_contact si un sous-type est sélectionné
+			$subtypeContactId = GETPOST('subtype_contact', 'int');
+			if ($subtypeContactId > 0) {
+				if ($idElementContact !== null) {
+					$sqlInsert = "INSERT INTO ".MAIN_DB_PREFIX."kjraffaire_souselement_contact (id_element_contact, id_soustype_contact)
+								VALUES (".$db->escape($idElementContact).", ".$db->escape($subtypeContactId).")";
+
+					$resqlInsert = $db->query($sqlInsert);
+					if (!$resqlInsert) {
+						setEventMessages($db->lasterror(), null, 'errors');
+					}
+				} else {
+					setEventMessages("Error: Unable to determine id_element_contact for subtype insertion.", null, 'errors');
+				}
+			}
+
+			// Redirection après succès
 			header("Location: ".$_SERVER['PHP_SELF']."?id=".$object->id);
 			exit;
+
 		}
+		
 	}
 
 	// Change contact's status
@@ -484,7 +536,7 @@ if ($id > 0 || !empty($ref)) {
 	print '<br>';
 
 	// Contacts lines (modules that overwrite templates must declare this into descriptor)
-	$dirtpls = array_merge($conf->modules_parts['tpl'], array('/core/tpl'));
+	$dirtpls = array_merge($conf->modules_parts['tpl'], array('/custom/kjraffaire/core/tpl'));
 	foreach ($dirtpls as $reldir) {
 		$res = @include dol_buildpath($reldir.'/contacts.tpl.php');
 		if ($res) {

@@ -399,4 +399,49 @@ class ActionsKjraffaire extends CommonHookActions
         return 0;
     }
 
+	public function createDictionaryFieldlist($parameters, &$object, &$action, $hookmanager)
+    {
+        global $db, $langs;
+
+        if ($parameters['tabname'] === 'kjraffaire_dico_soustype_contact') {
+            print '<td>';
+            print '<input type="text" name="code" class="flat quatrevingtpercent" maxlength="64" value="">';
+            print '</td>';
+
+            print '<td>';
+            print '<input type="text" name="libelle" class="flat quatrevingtpercent" maxlength="128" value="">';
+            print '</td>';
+
+            print '<td>';
+            print '<select name="fk_type_contact" class="flat">';
+            print '<option value="">-- Sélectionner --</option>';
+
+            $sql = "SELECT rowid, libelle 
+                    FROM ".MAIN_DB_PREFIX."c_type_contact 
+                    WHERE active = 1 AND element = 'kjraffaire' AND source = 'external'
+                    ORDER BY position ASC";
+            $resql = $db->query($sql);
+
+            if ($resql) {
+                while ($obj = $db->fetch_object($resql)) {
+                    print '<option value="'.$obj->rowid.'">'.$obj->libelle.'</option>';
+                }
+            } else {
+                print '<option value="">'.$langs->trans("ErrorLoadingData").'</option>';
+            }
+
+            print '</select>';
+            print '</td>';
+
+            print '<td>';
+            print '<input type="number" name="position" class="flat" value="0" min="0">';
+            print '<input type="hidden" name="parent_type" value="999">';
+            print '</td>';
+
+            return 1;
+        }
+
+        return 0;
+    }
+
 }

@@ -224,64 +224,83 @@ class modKjraffaire extends DolibarrModules
 			'tabname'=>array(
 				"kjraffaire_dico_type_affaire",
 				"kjraffaire_dico_action_juridique",
-				"kjraffaire_dico_instance"
+				"kjraffaire_dico_instance",
+				"kjraffaire_dico_soustype_contact",
 			),
 			// Label of tables
 			'tablib'=>array(
 				"Type affaire",
 				"Action juridique",
-				"Instance"
+				"Instance",
+				"Sous-types de contact - Affaire",
 			),
 			// Request to select fields
 			'tabsql'=>array(
 				'SELECT f.rowid as rowid, f.label, f.active FROM '.MAIN_DB_PREFIX.'kjraffaire_dico_type_affaire as f',
 				'SELECT f.rowid as rowid, f.label, f.active FROM '.MAIN_DB_PREFIX.'kjraffaire_dico_action_juridique as f',
-				'SELECT f.rowid as rowid, f.nom_etablissement, f.active FROM '.MAIN_DB_PREFIX.'kjraffaire_dico_instance as f'
-			),
+				'SELECT f.rowid as rowid, f.nom_etablissement, f.active FROM '.MAIN_DB_PREFIX.'kjraffaire_dico_instance as f',
+				'SELECT s.rowid AS rowid, s.code, s.libelle, t.libelle AS parent_type, s.fk_type_contact, s.position, s.active FROM '.MAIN_DB_PREFIX.'kjraffaire_dico_soustype_contact s LEFT JOIN '.MAIN_DB_PREFIX.'c_type_contact t ON s.fk_type_contact = t.rowid',
+		   ),
 		 	// Sort order
 		 	'tabsqlsort'=>array(
 				"label ASC",
 				"label ASC",
 				"nom_etablissement ASC",
+				"position ASC",
 			),
 		 	// List of fields (result of select to show dictionary)
 		 	'tabfield'=>array(
 				"label",
 				"label",
-				"nom_etablissement"
+				"nom_etablissement",
+				"code,libelle,parent_type,position",
 			),
 		 	// List of fields (list of fields to edit a record)
 		 	'tabfieldvalue'=>array(
 				"label",
 				"label",
-				"nom_etablissement"
+				"nom_etablissement",
+				"code,libelle,fk_type_contact,position",
 			),
 		 	// List of fields (list of fields for insert)
 		 	'tabfieldinsert'=>array(
 				"label",
 				"label",
-				"nom_etablissement"
+				"nom_etablissement",
+				"code,libelle,fk_type_contact,position",
 			),
 		 	// Name of columns with primary key (try to always name it 'rowid')
 		 	'tabrowid'=>array(
 				"rowid",
 				"rowid",
-				"rowid"
+				"rowid",
+				"rowid",
 			),
 		 	// Condition to show each dictionary
 		 	'tabcond'=>array(
 				isModEnabled('kjraffaire'), 
 				isModEnabled('kjraffaire'),
-				isModEnabled('kjraffaire')
+				isModEnabled('kjraffaire'),
+				isModEnabled('kjraffaire'),
 			),
 		 	// Tooltip for every fields of dictionaries: DO NOT PUT AN EMPTY ARRAY
 		 	'tabhelp'=>array(
 				array('code'=>$langs->trans('CodeTooltipHelp'), 'field2' => 'field2tooltip'),
 				array('code'=>$langs->trans('CodeTooltipHelp'), 'field2' => 'field2tooltip'),
 				array('code'=>$langs->trans('CodeTooltipHelp'), 'field2' => 'field2tooltip'),
+				array(
+					'code' => $langs->trans('CodeTooltipHelp'),
+					'libelle' => $langs->trans('LibelleTooltipHelp'),
+					'fk_type_contact' => $langs->trans('TypeParentTooltipHelp'),
+					'position' => $langs->trans('PositionTooltipHelp'),
+				),
 			),
 		);
 
+		// Initialisation du dictionnaire
+        if (!empty($GLOBALS['elementList'])) {
+            $this->addMoreElementList($GLOBALS['elementList']);
+        }
 		/* Fin Dictionnaires */
 		 
 
@@ -542,5 +561,12 @@ class modKjraffaire extends DolibarrModules
 	{
 		$sql = array();
 		return $this->_remove($sql, $options);
+	}
+
+	public function addMoreElementList(&$elementList)
+	{
+		global $langs;
+		$langs->load("kjraffaire@<kjraffaire>");
+		$elementList['kjraffaire'] = img_picto('', 'object_generic', 'class="pictofixedwidth"') . $langs->trans('kjraffaire');
 	}
 }
