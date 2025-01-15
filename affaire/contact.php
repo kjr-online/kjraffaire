@@ -383,7 +383,7 @@ if ($id > 0 || !empty($ref)) {
 	//print "userAccess=".$userAccess." userWrite=".$userWrite." userDelete=".$userDelete;
 
 	$head = affaire_prepare_head($object);
-	print dol_get_fiche_head($head, 'contact', $langs->trans("Project"), -1, ($object->public ? 'projectpub' : 'project'));
+	print dol_get_fiche_head($head, 'contact', $langs->trans("Project"), -1, ($object->public ? 'fa-briefcase' : 'fa-briefcase'));
 
 	$formconfirm = $formconfirmtoaddtasks;
 
@@ -444,9 +444,8 @@ if ($id > 0 || !empty($ref)) {
 		print img_picto($langs->trans('PrivateProject'), 'private', 'class="paddingrightonly"');
 		print $langs->trans('PrivateProject');
 	} elseif ($object->public == 2) {
-		print img_picto($langs->trans('Group'), 'group', 'class="paddingrightonly"');
+		print img_picto($langs->trans('Group'), 'group', 'class="paddingrightonly" style="color: #6CA89C;"');
 		print '<i><u>' . $langs->trans('Group') . ':' . '</u></i> ';
-		
 		// Récupération des groupes associés
 		$group_names = [];
 		$sql = "SELECT group_id FROM ".MAIN_DB_PREFIX."kjraffaire_visibility_group WHERE affaire_id = ".$db->escape($object->id);
