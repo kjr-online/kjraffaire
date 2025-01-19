@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS llx_kjraffaire_dico_instance( 
+CREATE TABLE IF NOT EXISTS llx_kjraffaire_dico_juridiction( 
     rowid integer AUTO_INCREMENT PRIMARY KEY NOT NULL, 
     typeinstance varchar(10),
     code_insee varchar(10),

@@ -224,21 +224,21 @@ class modKjraffaire extends DolibarrModules
 			'tabname'=>array(
 				"kjraffaire_dico_type_affaire",
 				"kjraffaire_dico_action_juridique",
-				"kjraffaire_dico_instance",
+				"kjraffaire_dico_juridiction",
 				"kjraffaire_dico_soustype_contact",
 			),
 			// Label of tables
 			'tablib'=>array(
 				"Type affaire",
 				"Action juridique",
-				"Instance",
+				"Juridiction",
 				"Sous-types de contact - Affaire",
 			),
 			// Request to select fields
 			'tabsql'=>array(
 				'SELECT f.rowid as rowid, f.label, f.active FROM '.MAIN_DB_PREFIX.'kjraffaire_dico_type_affaire as f',
 				'SELECT f.rowid as rowid, f.label, f.active FROM '.MAIN_DB_PREFIX.'kjraffaire_dico_action_juridique as f',
-				'SELECT f.rowid as rowid, f.nom_etablissement, f.active FROM '.MAIN_DB_PREFIX.'kjraffaire_dico_instance as f',
+				'SELECT f.rowid as rowid, f.nom_etablissement, f.active FROM '.MAIN_DB_PREFIX.'kjraffaire_dico_juridiction as f',
 				'SELECT s.rowid AS rowid, s.code, s.libelle, t.libelle AS parent_type, s.fk_type_contact, s.position, s.active FROM '.MAIN_DB_PREFIX.'kjraffaire_dico_soustype_contact s LEFT JOIN '.MAIN_DB_PREFIX.'c_type_contact t ON s.fk_type_contact = t.rowid',
 		   ),
 		 	// Sort order

@@ -49,8 +49,8 @@ insert into llx_kjraffaire_dico_action_juridique(label,typeaction,active) values
 insert into llx_kjraffaire_dico_action_juridique(label,typeaction,active) values('Action en troubles du voisinage','Fonds',1);
 insert into llx_kjraffaire_dico_action_juridique(label,typeaction,active) values('Action en résiliation de bail','Fonds',1);
 
-truncate table llx_kjraffaire_dico_instance;
-INSERT INTO `llx_kjraffaire_dico_instance` (`rowid`, `typeinstance`, `code_insee`, `code_orig`, `num`, `nom_etablissement`, `numero_et_libelle_voie`, `lieu_dit`, `code_postal`, `ligne_d_acheminement`, `pays_ou_denomination_tom_com`, `coordonnees_x`, `coordonnees_y`, `nu_tel`, `adresse_mail`, `active`) VALUES
+truncate table llx_kjraffaire_dico_juridiction;
+INSERT INTO `llx_kjraffaire_dico_juridiction` (`rowid`, `typeinstance`, `code_insee`, `code_orig`, `num`, `nom_etablissement`, `numero_et_libelle_voie`, `lieu_dit`, `code_postal`, `ligne_d_acheminement`, `pays_ou_denomination_tom_com`, `coordonnees_x`, `coordonnees_y`, `nu_tel`, `adresse_mail`, `active`) VALUES
 (1, 'CASS', '01053', '9', '446', 'Cour d\'Assises de l\'Ain', '32 AVENUE ALSACE LORRAINE', '', '01000', 'BOURG EN BRESSE', '', 46.20185800, 5.22054800, '04 26 37 73 00', '', 1),
 (2, 'CCD', '01053', '9', '67381', 'Cour Criminelle Départementale de l\'Ain', '32 AVENUE ALSACE LORRAINE', '', '01000', 'BOURG EN BRESSE', '', 46.20185800, 5.22054800, '04 26 37 73 00', '', 1),
 (3, 'CDAD', '01053', '9', '58966', 'Conseil départemental d\'accès au droit de l\'Ain', '34 COURS DE VERDUN', '', '01000', 'BOURG EN BRESSE', '', 48.86270000, 2.28750000, '04 74 14 01 40', 'contact@cdad-ain.fr', 1),
@@ -313,7 +313,7 @@ INSERT INTO `llx_kjraffaire_dico_instance` (`rowid`, `typeinstance`, `code_insee
 (260, 'TGI', '18033', '1', '68', 'Tribunal judiciaire de Bourges', '8 RUE DES ARENES', '', '18000', 'BOURGES', '', 47.08488100, 2.39287600, '02 48 68 34 34', 'tj1-bourges@justice.fr', 1),
 (261, 'TBRTJ', '18197', '9', '63421', 'Tribunal Paritaire des Baux Ruraux de Saint-Amand-Montrond', '11 COURS MANUEL', '', '18200', 'ST AMAND MONTROND', '', 46.72084500, 2.50559200, '02 48 96 08 48', '', 1),
 (262, 'TPRX', '18197', '9', '62955', 'Tribunal de proximité de Saint-Amand-Montrond', '11 COURS MANUEL', '', '18200', 'ST AMAND MONTROND', '', 46.72084500, 2.50559200, '02 48 96 08 48', 'tprx-st-amand-montrond@justice.fr', 1);
-INSERT INTO `llx_kjraffaire_dico_instance` (`rowid`, `typeinstance`, `code_insee`, `code_orig`, `num`, `nom_etablissement`, `numero_et_libelle_voie`, `lieu_dit`, `code_postal`, `ligne_d_acheminement`, `pays_ou_denomination_tom_com`, `coordonnees_x`, `coordonnees_y`, `nu_tel`, `adresse_mail`, `active`) VALUES
+INSERT INTO `llx_kjraffaire_dico_juridiction` (`rowid`, `typeinstance`, `code_insee`, `code_orig`, `num`, `nom_etablissement`, `numero_et_libelle_voie`, `lieu_dit`, `code_postal`, `ligne_d_acheminement`, `pays_ou_denomination_tom_com`, `coordonnees_x`, `coordonnees_y`, `nu_tel`, `adresse_mail`, `active`) VALUES
 (263, 'CASS', '52121', '9', '346', 'Cour d\'Assises de la Haute-Marne', 'RUE DU PALAIS', '', '18350', 'CHAUMONT', '', 48.11245700, 5.13741800, '03 25 32 84 20', '', 1),
 (264, 'CPH', '52121', '1', '1073', 'Conseil de Prud\'hommes de Chaumont', 'RUE DU PALAIS', '', '18350', 'CHAUMONT', '', 48.11245700, 5.13741800, '03 25 03 12 00', 'cph-chaumont@justice.fr', 1),
 (265, 'TBRTJ', '52121', '9', '63437', 'Tribunal Paritaire des Baux Ruraux de Chaumont', 'RUE DU PALAIS', '', '18350', 'CHAUMONT', '', 48.11245700, 5.13741800, '03 25 35 34 34', '', 1),
@@ -575,7 +575,7 @@ INSERT INTO `llx_kjraffaire_dico_instance` (`rowid`, `typeinstance`, `code_insee
 (521, 'TBRTJ', '35236', '9', '63547', 'Tribunal Paritaire des Baux Ruraux de Redon', '3 RUE JOSEPH DESMARS', '', '35600', 'REDON', '', 47.65115000, -2.08229700, '02 90 56 20 90', '', 1),
 (522, 'TPRX', '35236', '9', '63053', 'Tribunal de proximité de Redon', '3 RUE JOSEPH DESMARS', '', '35600', 'REDON', '', 47.65115000, -2.08229700, '02 90 56 20 90', 'tprx-redon@justice.fr', 1),
 (523, 'CASS', '36044', '9', '2215', 'Cour d\'Assises de l\'Indre', 'PLACE LUCIEN GERMEREAU', '', '36000', 'CHATEAUROUX', '', 46.80897700, 1.69354200, '02 54 60 35 35', '', 1);
-INSERT INTO `llx_kjraffaire_dico_instance` (`rowid`, `typeinstance`, `code_insee`, `code_orig`, `num`, `nom_etablissement`, `numero_et_libelle_voie`, `lieu_dit`, `code_postal`, `ligne_d_acheminement`, `pays_ou_denomination_tom_com`, `coordonnees_x`, `coordonnees_y`, `nu_tel`, `adresse_mail`, `active`) VALUES
+INSERT INTO `llx_kjraffaire_dico_juridiction` (`rowid`, `typeinstance`, `code_insee`, `code_orig`, `num`, `nom_etablissement`, `numero_et_libelle_voie`, `lieu_dit`, `code_postal`, `ligne_d_acheminement`, `pays_ou_denomination_tom_com`, `coordonnees_x`, `coordonnees_y`, `nu_tel`, `adresse_mail`, `active`) VALUES
 (524, 'CCD', '36044', '9', '67424', 'Cour Criminelle Départementale de l\'Indre', 'PLACE LUCIEN GERMEREAU', '', '36000', 'CHATEAUROUX', '', 46.80897700, 1.69354200, '02 54 60 35 35', '', 1),
 (525, 'CDAD', '36044', '9', '58976', 'Conseil départemental d\'accès au droit de l\'Indre', 'PLACE LUCIEN GERMEREAU', '', '36000', 'CHATEAUROUX', '', 46.80897700, 1.69354200, '02 54 60 35 35', 'cdad-indre@justice.fr', 1),
 (526, 'CPH', '36044', '1', '1033', 'Conseil de Prud\'hommes de Châteauroux', 'PLACE LUCIEN GERMEREAU', '', '36000', 'CHATEAUROUX', '', 46.80897700, 1.69354200, '02 18 47 90 30', 'cph-chateauroux@justice.fr', 1),
@@ -833,7 +833,7 @@ INSERT INTO `llx_kjraffaire_dico_instance` (`rowid`, `typeinstance`, `code_insee
 (778, 'TBRTJ', '57463', '9', '63634', 'Tribunal Paritaire des Baux Ruraux de Metz', '3 RUE HAUTE PIERRE', '', '57000', 'METZ', '', 49.11684600, 6.17114100, '03 87 56 75 00', '', 1),
 (779, 'TE', '57463', '1', '2793', 'Tribunal pour Enfants de Metz', 'RUE HAUTE-PIERRE', '', '57000', 'METZ', '', 49.11706800, 6.17144500, '03 87 56 75 00', '', 1),
 (780, 'TGI', '57463', '1', '137', 'Tribunal judiciaire de Metz', '3 RUE HAUTE PIERRE', '', '57000', 'METZ', '', 49.11684600, 6.17114100, '03 87 56 75 00', 'accueil-metz@justice.fr', 1);
-INSERT INTO `llx_kjraffaire_dico_instance` (`rowid`, `typeinstance`, `code_insee`, `code_orig`, `num`, `nom_etablissement`, `numero_et_libelle_voie`, `lieu_dit`, `code_postal`, `ligne_d_acheminement`, `pays_ou_denomination_tom_com`, `coordonnees_x`, `coordonnees_y`, `nu_tel`, `adresse_mail`, `active`) VALUES
+INSERT INTO `llx_kjraffaire_dico_juridiction` (`rowid`, `typeinstance`, `code_insee`, `code_orig`, `num`, `nom_etablissement`, `numero_et_libelle_voie`, `lieu_dit`, `code_postal`, `ligne_d_acheminement`, `pays_ou_denomination_tom_com`, `coordonnees_x`, `coordonnees_y`, `nu_tel`, `adresse_mail`, `active`) VALUES
 (781, 'CPH', '57672', '1', '1088', 'Conseil de Prud\'hommes de Thionville', '12 ALLEE RAYMOND POINCARE', '', '57100', 'THIONVILLE', '', 49.35679600, 6.16297200, '03 55 84 30 20', 'cph-thionville@justice.fr', 1),
 (782, 'TBRTJ', '57672', '9', '63642', 'Tribunal Paritaire des Baux Ruraux de Thionville', '12 ALLEE RAYMOND POINCARE', '', '57100', 'THIONVILLE', '', 49.35679600, 6.16297200, '03 55 84 30 20', '', 1),
 (783, 'TE', '57672', '1', '2809', 'Tribunal pour Enfants de Thionville', 'QUAI PIERRE MARCHAL', '', '57100', 'THIONVILLE', '', 49.35784900, 6.16928300, '03 82 82 43 50', '', 1),
@@ -1090,7 +1090,7 @@ INSERT INTO `llx_kjraffaire_dico_instance` (`rowid`, `typeinstance`, `code_insee
 (1034, 'TBRTJ', '71153', '9', '63443', 'Tribunal Paritaire des Baux Ruraux du Creusot', '20 RUE DE LA CHAISE', '', '71200', 'LE CREUSOT', '', 46.80504700, 4.42699200, '03 85 55 10 16', '', 1),
 (1035, 'TPRX', '71153', '9', '62989', 'Tribunal de proximité du Creusot', '20 RUE DE LA CHAISE', '', '71200', 'LE CREUSOT', '', 46.80504700, 4.42699200, '03 85 55 10 16', 'tprx-le-creusot@justice.fr', 1),
 (1036, 'CASS', '72181', '9', '570', 'Cour d\'Assises de la Sarthe', '1 AVENUE PIERRE MENDES-FRANCE', '', '72000', 'LE MANS', '', 48.00700000, 0.19978300, '02 43 83 77 00', '', 1);
-INSERT INTO `llx_kjraffaire_dico_instance` (`rowid`, `typeinstance`, `code_insee`, `code_orig`, `num`, `nom_etablissement`, `numero_et_libelle_voie`, `lieu_dit`, `code_postal`, `ligne_d_acheminement`, `pays_ou_denomination_tom_com`, `coordonnees_x`, `coordonnees_y`, `nu_tel`, `adresse_mail`, `active`) VALUES
+INSERT INTO `llx_kjraffaire_dico_juridiction` (`rowid`, `typeinstance`, `code_insee`, `code_orig`, `num`, `nom_etablissement`, `numero_et_libelle_voie`, `lieu_dit`, `code_postal`, `ligne_d_acheminement`, `pays_ou_denomination_tom_com`, `coordonnees_x`, `coordonnees_y`, `nu_tel`, `adresse_mail`, `active`) VALUES
 (1037, 'CCD', '72181', '9', '67453', 'Cour Criminelle Départementale de la Sarthe', '1 AVENUE PIERRE MENDES-FRANCE', '', '72000', 'LE MANS', '', 48.00700000, 0.19978300, '02 43 83 77 00', '', 1),
 (1038, 'CDAD', '72181', '9', '58996', 'Conseil départemental d\'accès au droit de Sarthe', '1 AVENUE PIERRE MENDES-FRANCE', '', '72000', 'LE MANS', '', 48.00700000, 0.19978300, '02 72 91 10 14', 'cdad72@gmail.com', 1),
 (1039, 'CPH', '72181', '1', '1147', 'Conseil de Prud\'hommes du Mans', '1 AVENUE PIERRE MENDES-FRANCE', '', '72000', 'LE MANS', '', 48.00700000, 0.19978300, '02 43 83 77 55', 'cph-le-mans@justice.fr', 1),
@@ -1348,7 +1348,7 @@ INSERT INTO `llx_kjraffaire_dico_instance` (`rowid`, `typeinstance`, `code_insee
 (1291, 'TGI', '89024', '1', '205', 'Tribunal judiciaire d\'Auxerre', 'PLACE DU PALAIS DE JUSTICE', '', '89000', 'AUXERRE', '', 47.79832200, 3.56821500, '03 86 72 30 00', 'tj-auxerre@justice.fr', 1),
 (1292, 'CPH', '89387', '1', '1198', 'Conseil de Prud\'hommes de Sens', '35 RUE DE LA PEPINIERE', '', '89100', 'SENS', '', 48.20684800, 3.28876000, '03 86 65 35 00', 'cph-sens@justice.fr', 1),
 (1293, 'TBRTJ', '89387', '9', '63874', 'Tribunal Paritaire des Baux Ruraux de Sens', '3 RUE THENARD', '', '89100', 'SENS', '', 48.19866200, 3.28385400, '03 86 83 91 00', '', 1);
-INSERT INTO `llx_kjraffaire_dico_instance` (`rowid`, `typeinstance`, `code_insee`, `code_orig`, `num`, `nom_etablissement`, `numero_et_libelle_voie`, `lieu_dit`, `code_postal`, `ligne_d_acheminement`, `pays_ou_denomination_tom_com`, `coordonnees_x`, `coordonnees_y`, `nu_tel`, `adresse_mail`, `active`) VALUES
+INSERT INTO `llx_kjraffaire_dico_juridiction` (`rowid`, `typeinstance`, `code_insee`, `code_orig`, `num`, `nom_etablissement`, `numero_et_libelle_voie`, `lieu_dit`, `code_postal`, `ligne_d_acheminement`, `pays_ou_denomination_tom_com`, `coordonnees_x`, `coordonnees_y`, `nu_tel`, `adresse_mail`, `active`) VALUES
 (1294, 'TCO', '89387', '1', '447', 'Tribunal de Commerce de Sens', '1 RUE DU PALAIS DE JUSTICE', '', '89100', 'SENS', '', 48.19642900, 3.27674400, '03 86 65 23 53', '', 1),
 (1295, 'TGI', '89387', '1', '206', 'Tribunal judiciaire de Sens', '1 RUE DU PALAIS DE JUSTICE', '', '89100', 'SENS', '', 48.19642900, 3.27674400, '03 86 65 86 00', 'tj-sens@justice.fr', 1),
 (1296, 'CDAD', '90010', '9', '58961', 'Conseil départemental d\'accès au droit du Territoire de Belfort', '4 RUE DES NOUVELLES', '', '90000', 'BELFORT', '', 47.63841100, 6.86251500, '03 84 54 98 08', 'cdad90@gmail.com', 1),
