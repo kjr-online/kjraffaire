@@ -581,6 +581,30 @@ if (empty($reshook)) {
 			$newobject->fetch($result);
 			$newobject->fetch_optionals();
 			$newobject->fetch_thirdparty(); // Load new object
+			// Clonage des groupes si public = 2
+			if ($object->public == 2) {
+				$sql = "SELECT group_id FROM ".MAIN_DB_PREFIX."kjraffaire_visibility_group WHERE affaire_id = ".$db->escape($object->id);
+				$resql = $db->query($sql);
+	
+				if ($resql) {
+					while ($row = $db->fetch_object($resql)) {
+						$sqlInsert = "INSERT INTO ".MAIN_DB_PREFIX."kjraffaire_visibility_group (affaire_id, group_id)
+									  VALUES (".$db->escape($newobject->id).", '".$db->escape($row->group_id)."')";
+						if (!$db->query($sqlInsert)) {
+							setEventMessages($langs->trans("ErrorWhileCloningVisibilityGroup"), null, 'errors');
+						}
+					}
+				} else {
+					setEventMessages($langs->trans("ErrorWhileFetchingVisibilityGroup"), null, 'errors');
+				}
+				$sqlUpdate = "UPDATE ".MAIN_DB_PREFIX."projet SET public = 2 WHERE rowid = ".$db->escape($newobject->id);
+				if (!$db->query($sqlUpdate)) {
+					setEventMessages($langs->trans("ErrorWhileUpdatingProjectPublic"), null, 'errors');
+				}
+				// Recharger l'objet pour inclure les changements
+				$newobject->fetch($newobject->id);
+			}
+			
 			$object = $newobject;
 			$action = 'view';
 			$comefromclone = true;
