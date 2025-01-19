@@ -108,7 +108,20 @@ class ActionsKjraffaire extends CommonHookActions
 
         // Il ne faut pas pouvoir les extrafields des affaires dans les listes de projets
         global $arrayfields,$contextpage;
-        $extrafields_to_exclude = ['ef.type_affaire'];
+        $extrafields_to_exclude = [
+			'ef.type_affaire',
+			'ef.fk_kjraffaire_dico_juridiction',
+			'ef.fk_kjraffaire_dico_action_juridique',
+			'ef.chambre',
+			'ef.no_role',
+			'ef.fk_soc_magistrat',
+			'ef.fk_socpeople_magistrat',
+			'ef.section',
+			'ef.date_decision',
+			'ef.date_signification',
+			'ef.fk_soc_avocat_postulant',
+			'ef.fk_socpeople_avocat_postulant'
+		];
 		if (!preg_match('/kjraffaire/', $_SERVER['PHP_SELF'])){
             foreach ($extrafields_to_exclude as $field) {
                 if (isset($arrayfields[$field])) {
