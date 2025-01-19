@@ -202,21 +202,18 @@ if (empty($reshook)) {
 			}
 		}
 
-		// Create with status validated immediately
 		if (getDolGlobalString('PROJECT_CREATE_NO_DRAFT') && !$error) {
 			$status = Project::STATUS_VALIDATED;
 		}
 
 		if (!$error) {
-			$error = 0;
-
 			$db->begin();
 
 			$object->ref                  = GETPOST('ref', 'alphanohtml');
 			$object->fk_project           = GETPOSTINT('fk_project');
 			$object->title                = GETPOST('title', 'alphanohtml');
 			$object->socid                = GETPOSTINT('socid');
-			$object->description          = GETPOST('description', 'restricthtml'); // Do not use 'alpha' here, we want field as it is
+			$object->description          = GETPOST('description', 'restricthtml');
 			$object->public               = GETPOST('public', 'alphanohtml');
 			$object->opp_amount           = GETPOSTFLOAT('opp_amount');
 			$object->budget_amount        = GETPOSTFLOAT('budget_amount');
@@ -237,58 +234,57 @@ if (empty($reshook)) {
 			// Mettre extrafield 'affaire' à 1
 			$object->array_options['options_affaire'] = 1;
 
-			// Fill array 'array_options' with data from add form
-			$ret = $extrafields->setOptionalsFromPost(null, $object);
-			if ($ret < 0) {
-				$error++;
-			}
-
+			// Création du projet
 			$result = $object->create($user);
-			if (!$error && $result > 0) {
-				// Add myself as project leader
-				$typeofcontact = 'PROJECTLEADER';
-				$result = $object->add_contact($user->id, $typeofcontact, 'internal');
+			if ($result > 0) {
+				// Ajout des groupes si visibilité "Group"
+				$public = GETPOST('public', 'alpha');
+				if ($public == '2') {
+					$selected_groups = GETPOST('public_group', 'array');
+					$group_ids = $selected_groups ? implode(';', $selected_groups) : '';
 
-				// -3 means type not found (PROJECTLEADER renamed, de-activated or deleted), so don't prevent creation if it has been the case
-				if ($result == -3) {
-					setEventMessage('ErrorPROJECTLEADERRoleMissingRestoreIt', 'errors');
-					$error++;
-				} elseif ($result < 0) {
-					$langs->load("errors");
-					setEventMessages($object->error, $object->errors, 'errors');
-					$error++;
+					$sql = "INSERT INTO ".MAIN_DB_PREFIX."kjraffaire_visibility_group (affaire_id, group_id) 
+							VALUES (".$db->escape($object->id).", '".$db->escape($group_ids)."')";
+					if (!$db->query($sql)) {
+						$error++;
+						setEventMessages($langs->trans("ErrorWhileInsertingVisibilityGroup"), null, 'errors');
+					}
 				}
-			} else {
-				$langs->load("errors");
-				setEventMessages($object->error, $object->errors, 'errors');
-				$error++;
-			}
-			if (!$error && !empty($object->id) > 0) {
-				// Category association
+
+				// Ajout des catégories
 				$categories = GETPOST('categories', 'array');
 				$result = $object->setCategories($categories);
 				if ($result < 0) {
-					$langs->load("errors");
-					setEventMessages($object->error, $object->errors, 'errors');
 					$error++;
+					setEventMessages($object->error, $object->errors, 'errors');
 				}
-			}
 
-			if (!$error) {
-				$db->commit();
-
-				if (!empty($backtopage)) {
-					$backtopage = preg_replace('/--IDFORBACKTOPAGE--|__ID__/', (string) $object->id, $backtopage); // New method to autoselect project after a New on another form object creation
-					$backtopage = $backtopage.'&projectid='.$object->id; // Old method
-					header("Location: ".$backtopage);
-					exit;
-				} else {
-					header("Location:card.php?id=".$object->id);
-					exit;
+				// Ajout du créateur comme responsable du projet
+				$typeofcontact = 'PROJECTLEADER';
+				$result = $object->add_contact($user->id, $typeofcontact, 'internal');
+				if ($result < 0 && $result != -3) {
+					$error++;
+					setEventMessages($object->error, $object->errors, 'errors');
 				}
 			} else {
+				$error++;
+				setEventMessages($object->error, $object->errors, 'errors');
+			}
+
+			// Commit/Rollback selon le résultat
+			if (!$error) {
+				$db->commit();
+				if ($object->public == 2) {
+					$sql = "UPDATE ".MAIN_DB_PREFIX."projet SET public = 2 WHERE rowid = ".$db->escape($object->id);
+					if (!$db->query($sql)) {
+						setEventMessages($langs->trans("ErrorWhileUpdatingProjectPublic"), null, 'errors');
+						$error++;
+					}
+				}
+				header("Location: card.php?id=".$object->id);
+				exit;
+			} else {
 				$db->rollback();
-				unset($_POST["ref"]);
 				$action = 'create';
 			}
 		} else {
@@ -756,19 +752,54 @@ if ($action == 'create' && $user->hasRight('projet', 'creer')) {
 		$array[1] = $langs->trans("SharedProject");
 	}
 
-	if (count($array) > 0) {
-		print $form->selectarray('public', $array, GETPOST('public'), 0, 0, 0, '', 0, 0, 0, '', '', 1);
-	} else {
-		print '<input type="hidden" name="public" id="public" value="'.GETPOST('public').'">';
+	// Ajout option "Groupe"
+	$array[2] = $langs->trans("Group");
 
-		if (GETPOST('public') == 0) {
-			print img_picto($langs->trans('PrivateProject'), 'private', 'class="paddingrightonly"');
-			print $langs->trans("PrivateProject");
-		} else {
-			print img_picto($langs->trans('SharedProject'), 'world', 'class="paddingrightonly"');
-			print $langs->trans("SharedProject");
+	// Récupération des groupes utilisateurs
+	$group_array = array();
+	$sql = "SELECT rowid, nom FROM ".MAIN_DB_PREFIX."usergroup WHERE entity = ".$conf->entity;
+	$resql = $db->query($sql);
+	if ($resql) {
+		while ($obj = $db->fetch_object($resql)) {
+			$group_array[$obj->rowid] = $obj->nom;
 		}
+	} else {
+		dol_print_error($db);
 	}
+
+	print '<div style="display: flex; align-items: center; gap: 10px;">';
+
+	// Dropdown pour visibilité
+	print '<div id="select_public_container" style="flex: 1;">';
+	print $form->selectarray('public', $array, GETPOST('public'), 0, 0, 0, '', 0, 0, 0, '', '', 1);
+	print '</div>';
+
+	// Multiselect pour les groupes (caché par défaut)
+	print '<div id="multiselect_group_container" style="flex: 2; display: none;">';
+	print $form->multiselectarray('public_group', $group_array, array(), 0, 0, 'width250', 0, 0, '', '', '', 1);
+	print '</div>';
+
+	print '</div>';
+
+	// Afficher/masquer dynamiquement le multiselect
+	print '<script>
+		$(document).ready(function() {
+			function toggleGroupSelect() {
+				if ($("#public").val() == "2") {
+					$("#multiselect_group_container").show();
+				} else {
+					$("#multiselect_group_container").hide();
+				}
+			}
+
+			toggleGroupSelect();
+
+			$("#public").change(function() {
+				toggleGroupSelect();
+			});
+		});
+	</script>';
+
 	print '</td></tr>';
 
 	if (isModEnabled('eventorganization')) {
