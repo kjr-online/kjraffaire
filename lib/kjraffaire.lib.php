@@ -96,11 +96,20 @@ function affaire_prepare_head(Project $project, $moreparam = '')
 	$cachekey = 'count_contacts_project_'.$project->id;
 	$dataretrieved = dol_getcache($cachekey);
 
-	if (!is_null($dataretrieved)) {
-		$nbContacts = $dataretrieved;
+	$sql = "SELECT COUNT(ec.rowid) as nbContacts
+        FROM ".MAIN_DB_PREFIX."element_contact ec
+        INNER JOIN ".MAIN_DB_PREFIX."c_type_contact tc ON ec.fk_c_type_contact = tc.rowid
+        WHERE ec.element_id = ".$db->escape($project->id)."
+          AND tc.element = 'kjraffaire'";
+	$resql = $db->query($sql);
+
+	if ($resql) {
+		$obj = $db->fetch_object($resql);
+		if ($obj) {
+			$nbContacts = $obj->nbContacts;
+		}
 	} else {
-		$nbContacts = count($project->liste_contact(-1, 'internal')) + count($project->liste_contact(-1, 'external'));
-		dol_setcache($cachekey, $nbContacts, 120);	// If setting cache fails, this is not a problem, so we do not test result.
+		dol_syslog("Error SQL pendant count contacts: ".$db->lasterror(), LOG_ERR);
 	}
 	$head[$h][0] = DOL_URL_ROOT.'/custom/kjraffaire/affaire/contact.php?id='.((int) $project->id).($moreparam ? '&'.$moreparam : '');
 	$head[$h][1] = $langs->trans("AffaireContact");
