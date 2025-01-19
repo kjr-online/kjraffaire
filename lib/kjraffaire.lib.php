@@ -245,12 +245,12 @@ function affaire_prepare_head(Project $project, $moreparam = '')
 			}
 			dol_setcache($cachekey, $nbElements, 120);	// If setting cache fails, this is not a problem, so we do not test result.
 		}
-		$head[$h][0] = DOL_URL_ROOT.'/projet/element.php?id='.$project->id;
+		/*$head[$h][0] = DOL_URL_ROOT.'/projet/element.php?id='.$project->id;
 		$head[$h][1] = $langs->trans("ProjectOverview");
 		if ($nbElements > 0) {
 			$head[$h][1] .= '<span class="badge marginleftonlyshort">'.$nbElements.'</span>';
 		}
-		$head[$h][2] = 'element';
+		$head[$h][2] = 'element';*/
 		$h++;
 	}
 
@@ -360,12 +360,12 @@ function affaire_prepare_head(Project $project, $moreparam = '')
 		$totalAttached = $nbFiles + $nbLinks;
 		dol_setcache($cachekey, $totalAttached, 120);		// If setting cache fails, this is not a problem, so we do not test result.
 	}
-	$head[$h][0] = DOL_URL_ROOT.'/projet/document.php?id='.$project->id;
+	/*$head[$h][0] = DOL_URL_ROOT.'/projet/document.php?id='.$project->id;
 	$head[$h][1] = $langs->trans('Documents');
 	if (($totalAttached) > 0) {
 		$head[$h][1] .= '<span class="badge marginleftonlyshort">'.($totalAttached).'</span>';
 	}
-	$head[$h][2] = 'document';
+	$head[$h][2] = 'document';*/
 	$h++;
 
 	// Manage discussion
@@ -390,13 +390,13 @@ function affaire_prepare_head(Project $project, $moreparam = '')
 		$h++;
 	}
 
-	$head[$h][0] = DOL_URL_ROOT.'/projet/messaging.php?id='.$project->id;
+	/*$head[$h][0] = DOL_URL_ROOT.'/projet/messaging.php?id='.$project->id;
 	$head[$h][1] = $langs->trans("Events");
 	if (isModEnabled('agenda') && ($user->hasRight('agenda', 'myactions', 'read') || $user->hasRight('agenda', 'allactions', 'read'))) {
 		$head[$h][1] .= '/';
 		$head[$h][1] .= $langs->trans("Agenda");
 	}
-	$head[$h][2] = 'agenda';
+	$head[$h][2] = 'agenda';*/
 	$h++;
 
 	complete_head_from_modules($conf, $langs, $project, $head, $h, 'project', 'add', 'external');
