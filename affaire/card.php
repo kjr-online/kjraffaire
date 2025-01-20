@@ -604,6 +604,60 @@ if (empty($reshook)) {
 				// Recharger l'objet pour inclure les changements
 				$newobject->fetch($newobject->id);
 			}
+			// Clonage des contacts
+			if ($clone_contacts) {
+				$sql = "SELECT ec.rowid, ec.datecreate, ec.statut, ec.fk_socpeople, ec.fk_c_type_contact
+						FROM ".MAIN_DB_PREFIX."element_contact ec
+						INNER JOIN ".MAIN_DB_PREFIX."c_type_contact tc ON ec.fk_c_type_contact = tc.rowid
+						WHERE ec.element_id = ".$db->escape($object->id)."
+						  AND tc.element = 'kjraffaire'";
+				$resql = $db->query($sql);
+	
+				if ($resql) {
+					while ($row = $db->fetch_object($resql)) {
+						// Dupliquer les contacts llx_element_contact
+						$sqlInsert = "INSERT INTO ".MAIN_DB_PREFIX."element_contact (datecreate, statut, element_id, fk_c_type_contact, fk_socpeople)
+									  VALUES ('".$db->escape($row->datecreate)."', '".$db->escape($row->statut)."', '".$db->escape($newobject->id)."', '".$db->escape($row->fk_c_type_contact)."', '".$db->escape($row->fk_socpeople)."')";
+						if ($db->query($sqlInsert)) {
+							$newElementContactId = $db->last_insert_id(MAIN_DB_PREFIX."element_contact");
+	
+							// Dupliquer les données llx_kjraffaire_souselement_reference
+							$sqlRef = "SELECT reference
+									   FROM ".MAIN_DB_PREFIX."kjraffaire_souselement_reference
+									   WHERE id_element_contact = ".$db->escape($row->rowid);
+							$resRef = $db->query($sqlRef);
+							if ($resRef) {
+								while ($refRow = $db->fetch_object($resRef)) {
+									$sqlInsertRef = "INSERT INTO ".MAIN_DB_PREFIX."kjraffaire_souselement_reference (id_element_contact, reference)
+													 VALUES ('".$db->escape($newElementContactId)."', '".$db->escape($refRow->reference)."')";
+									if (!$db->query($sqlInsertRef)) {
+										setEventMessages($langs->trans("ErrorWhileCloningSousElementReference"), null, 'errors');
+									}
+								}
+							}
+	
+							// Dupliquer les données llx_kjraffaire_souselement_contact
+							$sqlContact = "SELECT id_soustype_contact
+										   FROM ".MAIN_DB_PREFIX."kjraffaire_souselement_contact
+										   WHERE id_element_contact = ".$db->escape($row->rowid);
+							$resContact = $db->query($sqlContact);
+							if ($resContact) {
+								while ($contactRow = $db->fetch_object($resContact)) {
+									$sqlInsertContact = "INSERT INTO ".MAIN_DB_PREFIX."kjraffaire_souselement_contact (id_element_contact, id_soustype_contact)
+														 VALUES ('".$db->escape($newElementContactId)."', '".$db->escape($contactRow->id_soustype_contact)."')";
+									if (!$db->query($sqlInsertContact)) {
+										setEventMessages($langs->trans("ErrorWhileCloningSousElementContact"), null, 'errors');
+									}
+								}
+							}
+						} else {
+							setEventMessages($langs->trans("ErrorWhileCloningElementContact"), null, 'errors');
+						}
+					}
+				} else {
+					setEventMessages($langs->trans("ErrorWhileFetchingContacts"), null, 'errors');
+				}
+			}
 			
 			$object = $newobject;
 			$action = 'view';
