@@ -181,6 +181,15 @@ if (empty($reshook)) {
 
 	// Action add
 	if ($action == 'add' && $permissiontoadd) {
+		$extrafields->fetch_name_optionals_label($object->table_element);
+		foreach ($extrafields->attributes[$object->table_element]['label'] as $key => $label) {
+			$object->array_options['options_'.$key] = GETPOST('options_'.$key, 'alphanohtml');
+		}
+		
+		// Mettre extrafield 'affaire' à 1
+		$object->array_options['options_affaire'] = 1;
+		// Afficher les extras fields Instance
+		$object->array_options['options_instance'] = 1;
 		$error = 0;
 		if (!GETPOST('ref')) {
 			setEventMessages($langs->trans("ErrorFieldRequired", $langs->transnoentities("Ref")), null, 'errors');
@@ -230,10 +239,6 @@ if (empty($reshook)) {
 			$object->usage_task           = (GETPOST('usage_task', 'alpha') == 'on' ? 1 : 0);
 			$object->usage_bill_time      = (GETPOST('usage_bill_time', 'alpha') == 'on' ? 1 : 0);
 			$object->usage_organize_event = (GETPOST('usage_organize_event', 'alpha') == 'on' ? 1 : 0);
-
-			// Mettre extrafield 'affaire' à 1
-			$object->array_options['options_affaire'] = 1;
-			$object->array_options['options_instance'] = 1;
 
 			// Création du projet
 			$result = $object->create($user);
@@ -294,6 +299,7 @@ if (empty($reshook)) {
 	}
 
 	if ($action == 'update' && empty(GETPOST('cancel')) && $permissiontoadd) {
+		$object->array_options['options_instance'] = 1;
 		$error = 0;
 
 		if (empty($ref)) {
@@ -708,6 +714,7 @@ if (getDolGlobalInt('PROJECT_USE_OPPORTUNITIES') == 2) { // 2 = leads only
 }
 
 if ($action == 'create' && $user->hasRight('projet', 'creer')) {
+	$object->array_options['options_instance'] = 1;
 	/*
 	 * Create
 	 */
@@ -820,7 +827,6 @@ if ($action == 'create' && $user->hasRight('projet', 'creer')) {
 
 	// Mettre extrafield 'affaire' à 1
 	$object->array_options['options_affaire'] = 1;
-	$object->array_options['options_instance'] = 1;
 
 	// Visibility
 	print '<tr><td>'.$langs->trans("Visibility").'</td><td class="maxwidthonsmartphone">';
@@ -1024,6 +1030,9 @@ if ($action == 'create' && $user->hasRight('projet', 'creer')) {
 	$head = affaire_prepare_head($object);
 
 	if ($action == 'edit' && $userWrite > 0) {
+		// Afficher les extras fields Instance
+		$object->array_options['options_instance'] = 1;
+		
 		print dol_get_fiche_head($head, 'project', $langs->trans("Project"), 0, ($object->public ? 'projectpub' : 'project'));
 
 		print '<table class="border centpercent">';
@@ -1380,6 +1389,7 @@ if ($action == 'create' && $user->hasRight('projet', 'creer')) {
 
 		// Affaire card
 		
+		// Masquer les extras fields Instance
 		$object->array_options['options_instance'] = 0;
 
 		if (!empty($_SESSION['pageforbacktolist']) && !empty($_SESSION['pageforbacktolist']['project'])) {

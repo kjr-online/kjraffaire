@@ -51,13 +51,13 @@ $result = $extrafields->addExtraField(
 
 // juridiction fk_kjraffaire_dico_juridiction (lien vers table dictionnaire)
 if (!isset($existingFields['fk_kjraffaire_dico_juridiction'])) {
-    $res = $extrafields->addExtraField( 'fk_kjraffaire_dico_juridiction','Juridiction','int',102,'','projet', 0, 0, '', '', 1, '','($object->array_options[\'options_instance\']==1)?1:0' );
+    $res = $extrafields->addExtraField( 'fk_kjraffaire_dico_juridiction','Juridiction','sellist',102,'','projet', 0, 0, '', array('options' => array('kjraffaire_dico_juridiction:nom_etablissement:rowid::(active:=:1)' => null)), 1, '','($object->array_options[\'options_instance\']==1)?1:0' );
     if ($res < 0) { dol_syslog("Erreur lors de l'ajout du champ extra fk_kjraffaire_dico_juridiction : " . $extrafields->error, LOG_ERR); return -1; }
 }
 
 // action : fk_kjraffaire_dico_action_juridique (lien vers table du dictionnaire)
 if (!isset($existingFields['fk_kjraffaire_dico_action_juridique'])) {
-    $res = $extrafields->addExtraField( 'fk_kjraffaire_dico_action_juridique','Action juridique','int',103,'','projet', 0, 0, '', '', 1, '','($object->array_options[\'options_instance\']==1)?1:0' );
+    $res = $extrafields->addExtraField( 'fk_kjraffaire_dico_action_juridique','Action juridique','sellist',103,'','projet', 0, 0, '', array('options' => array('kjraffaire_dico_action_juridique:label:rowid::(active:=:1)' => null)), 1, '','($object->array_options[\'options_instance\']==1)?1:0' );
     if ($res < 0) { dol_syslog("Erreur lors de l'ajout du champ extra fk_kjraffaire_dico_action_juridique : " . $extrafields->error, LOG_ERR); return -1; }
 }
 
@@ -95,13 +95,13 @@ if (!isset($existingFields['no_role'])) {
 
 // magistrat (société) : fk_magistrat (lien vers societe)
 if (!isset($existingFields['fk_soc_magistrat'])) {
-    $res = $extrafields->addExtraField( 'fk_soc_magistrat','Magistrat','int',106,'','projet', 0, 0, '', '', 1, '','($object->array_options[\'options_instance\']==1)?1:0' );
+    $res = $extrafields->addExtraField( 'fk_soc_magistrat','Magistrat (société)','sellist',106,'','projet', 0, 0, '', array('options' => array('societe:nom:rowid::(status:=:1)' => null)), 1, '','($object->array_options[\'options_instance\']==1)?1:0' );
     if ($res < 0) { dol_syslog("Erreur lors de l'ajout du champ extra fk_soc_magistrat : " . $extrafields->error, LOG_ERR); return -1; }
 }
 
 // magistrat (contact) : fk_magistrat (lien vers contact)
 if (!isset($existingFields['fk_socpeople_magistrat'])) {
-    $res = $extrafields->addExtraField( 'fk_socpeople_magistrat','Magistrat','int',107,'','projet', 0, 0, '', '', 1, '','($object->array_options[\'options_instance\']==1)?1:0' );
+    $res = $extrafields->addExtraField( 'fk_socpeople_magistrat','Magistrat (contact)','sellist',107,'','projet', 0, 0, '', array('options' => array('socpeople:lastname:rowid::(statut:=:1)' => null)), 1, '','($object->array_options[\'options_instance\']==1)?1:0' );
     if ($res < 0) { dol_syslog("Erreur lors de l'ajout du champ extra fk_socpeople_magistrat : " . $extrafields->error, LOG_ERR); return -1; }
 }
 
@@ -147,13 +147,13 @@ if (!isset($existingFields['date_recours'])) {
 
 // avocat postulant (société) : fk_soc_avocat_postulant (lien vers societe)
 if (!isset($existingFields['fk_soc_avocat_postulant'])) {
-    $res = $extrafields->addExtraField( 'fk_soc_avocat_postulant','Avocat postulant','int',112,'','projet', 0, 0, '', '', 1, '','($object->array_options[\'options_instance\']==1)?1:0' );
+    $res = $extrafields->addExtraField( 'fk_soc_avocat_postulant','Avocat postulant (société)','sellist',112,'','projet', 0, 0, '', array('options' => array('societe:nom:rowid::(status:=:1)' => null)), 1, '','($object->array_options[\'options_instance\']==1)?1:0' );
     if ($res < 0) { dol_syslog("Erreur lors de l'ajout du champ extra fk_soc_avocat_postulant : " . $extrafields->error, LOG_ERR); return -1; }
 }
 
 
 // avocat postulant (société) : fk_socpeople_avocat_postulant (lien vers societe)
 if (!isset($existingFields['fk_socpeople_avocat_postulant'])) {
-    $res = $extrafields->addExtraField( 'fk_socpeople_avocat_postulant','Avocat postulant','int',113,'','projet', 0, 0, '', '', 1, '','($object->array_options[\'options_instance\']==1)?1:0' );
+    $res = $extrafields->addExtraField( 'fk_socpeople_avocat_postulant','Avocat postulant (contact)','sellist',113,'','projet', 0, 0, '', array('options' => array('socpeople:lastname:rowid::(statut:=:1)' => null)), 1, '','($object->array_options[\'options_instance\']==1)?1:0' );
     if ($res < 0) { dol_syslog("Erreur lors de l'ajout du champ extra fk_socpeople_avocat_postulant : " . $extrafields->error, LOG_ERR); return -1; }
 }

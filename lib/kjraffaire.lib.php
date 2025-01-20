@@ -90,6 +90,13 @@ function affaire_prepare_head(Project $project, $moreparam = '')
 	$head[$h][1] = $langs->trans("Affaire");
 	$head[$h][2] = 'project';
 	$h++;
+
+	// Onglet Instance
+	$head[$h][0] = DOL_URL_ROOT.'/custom/kjraffaire/affaire/instance.php?id='.$project->id;
+	$head[$h][1] = "Instance";
+	$head[$h][2] = 'intance';
+	$h++;
+
 	$nbContacts = 0;
 	// Enable caching of project count Contacts
 	require_once DOL_DOCUMENT_ROOT.'/core/lib/memory.lib.php';
