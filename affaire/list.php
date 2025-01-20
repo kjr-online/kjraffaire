@@ -1715,24 +1715,6 @@ while ($i < $imaxinloop) {
 				print img_picto($langs->trans('PrivateProject'), 'private', 'class="paddingrightonly"');
 			} elseif ($obj->public == 2) {
 				print img_picto($langs->trans('Group'), 'group', 'class="paddingrightonly" style="color: #6CA89C;"');
-				
-				// Récupération des groupes associés
-				$group_names = [];
-				$sql = "SELECT group_id FROM ".MAIN_DB_PREFIX."kjraffaire_visibility_group WHERE affaire_id = ".$db->escape($obj->rowid);
-				$resql = $db->query($sql);
-				if ($resql) {
-					$record = $db->fetch_object($resql);
-					if ($record && !empty($record->group_id)) {
-						$group_ids = explode(';', $record->group_id);
-						$sql_groups = "SELECT nom FROM ".MAIN_DB_PREFIX."usergroup WHERE rowid IN (".implode(',', array_map('intval', $group_ids)).")";
-						$resql_groups = $db->query($sql_groups);
-						if ($resql_groups) {
-							while ($group = $db->fetch_object($resql_groups)) {
-								$group_names[] = $group->nom;
-							}
-						}
-					}
-				}
 			}
 			print '</td>';
 			if (!$i) {

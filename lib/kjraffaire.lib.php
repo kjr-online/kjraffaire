@@ -96,11 +96,20 @@ function affaire_prepare_head(Project $project, $moreparam = '')
 	$cachekey = 'count_contacts_project_'.$project->id;
 	$dataretrieved = dol_getcache($cachekey);
 
-	if (!is_null($dataretrieved)) {
-		$nbContacts = $dataretrieved;
+	$sql = "SELECT COUNT(ec.rowid) as nbContacts
+        FROM ".MAIN_DB_PREFIX."element_contact ec
+        INNER JOIN ".MAIN_DB_PREFIX."c_type_contact tc ON ec.fk_c_type_contact = tc.rowid
+        WHERE ec.element_id = ".$db->escape($project->id)."
+          AND tc.element = 'kjraffaire'";
+	$resql = $db->query($sql);
+
+	if ($resql) {
+		$obj = $db->fetch_object($resql);
+		if ($obj) {
+			$nbContacts = $obj->nbContacts;
+		}
 	} else {
-		$nbContacts = count($project->liste_contact(-1, 'internal')) + count($project->liste_contact(-1, 'external'));
-		dol_setcache($cachekey, $nbContacts, 120);	// If setting cache fails, this is not a problem, so we do not test result.
+		dol_syslog("Error SQL pendant count contacts: ".$db->lasterror(), LOG_ERR);
 	}
 	$head[$h][0] = DOL_URL_ROOT.'/custom/kjraffaire/affaire/contact.php?id='.((int) $project->id).($moreparam ? '&'.$moreparam : '');
 	$head[$h][1] = $langs->trans("AffaireContact");
@@ -245,12 +254,12 @@ function affaire_prepare_head(Project $project, $moreparam = '')
 			}
 			dol_setcache($cachekey, $nbElements, 120);	// If setting cache fails, this is not a problem, so we do not test result.
 		}
-		$head[$h][0] = DOL_URL_ROOT.'/projet/element.php?id='.$project->id;
+		/*$head[$h][0] = DOL_URL_ROOT.'/projet/element.php?id='.$project->id;
 		$head[$h][1] = $langs->trans("ProjectOverview");
 		if ($nbElements > 0) {
 			$head[$h][1] .= '<span class="badge marginleftonlyshort">'.$nbElements.'</span>';
 		}
-		$head[$h][2] = 'element';
+		$head[$h][2] = 'element';*/
 		$h++;
 	}
 
@@ -360,12 +369,12 @@ function affaire_prepare_head(Project $project, $moreparam = '')
 		$totalAttached = $nbFiles + $nbLinks;
 		dol_setcache($cachekey, $totalAttached, 120);		// If setting cache fails, this is not a problem, so we do not test result.
 	}
-	$head[$h][0] = DOL_URL_ROOT.'/projet/document.php?id='.$project->id;
+	/*$head[$h][0] = DOL_URL_ROOT.'/projet/document.php?id='.$project->id;
 	$head[$h][1] = $langs->trans('Documents');
 	if (($totalAttached) > 0) {
 		$head[$h][1] .= '<span class="badge marginleftonlyshort">'.($totalAttached).'</span>';
 	}
-	$head[$h][2] = 'document';
+	$head[$h][2] = 'document';*/
 	$h++;
 
 	// Manage discussion
@@ -390,13 +399,13 @@ function affaire_prepare_head(Project $project, $moreparam = '')
 		$h++;
 	}
 
-	$head[$h][0] = DOL_URL_ROOT.'/projet/messaging.php?id='.$project->id;
+	/*$head[$h][0] = DOL_URL_ROOT.'/projet/messaging.php?id='.$project->id;
 	$head[$h][1] = $langs->trans("Events");
 	if (isModEnabled('agenda') && ($user->hasRight('agenda', 'myactions', 'read') || $user->hasRight('agenda', 'allactions', 'read'))) {
 		$head[$h][1] .= '/';
 		$head[$h][1] .= $langs->trans("Agenda");
 	}
-	$head[$h][2] = 'agenda';
+	$head[$h][2] = 'agenda';*/
 	$h++;
 
 	complete_head_from_modules($conf, $langs, $project, $head, $h, 'project', 'add', 'external');
