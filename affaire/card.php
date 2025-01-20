@@ -233,6 +233,7 @@ if (empty($reshook)) {
 
 			// Mettre extrafield 'affaire' à 1
 			$object->array_options['options_affaire'] = 1;
+			$object->array_options['options_instance'] = 1;
 
 			// Création du projet
 			$result = $object->create($user);
@@ -819,6 +820,7 @@ if ($action == 'create' && $user->hasRight('projet', 'creer')) {
 
 	// Mettre extrafield 'affaire' à 1
 	$object->array_options['options_affaire'] = 1;
+	$object->array_options['options_instance'] = 1;
 
 	// Visibility
 	print '<tr><td>'.$langs->trans("Visibility").'</td><td class="maxwidthonsmartphone">';
@@ -1377,6 +1379,8 @@ if ($action == 'create' && $user->hasRight('projet', 'creer')) {
 		print dol_get_fiche_head($head, 'project', $langs->trans("Project"), -1, ($object->public ? 'fa-briefcase' : 'fa-briefcase'));
 
 		// Affaire card
+		
+		$object->array_options['options_instance'] = 0;
 
 		if (!empty($_SESSION['pageforbacktolist']) && !empty($_SESSION['pageforbacktolist']['project'])) {
 			$tmpurl = $_SESSION['pageforbacktolist']['project'];
