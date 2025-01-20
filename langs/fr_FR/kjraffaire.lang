@@ -49,3 +49,5 @@ AffaireContact = Contacts de l'affaire
 EnterReference = Saisir référence
 ConfirmCloneAffaire = Êtes-vous sûr de vouloir cloner cette affaire ?
 CloneAffaireFiles = Cloner les pièces jointes de l'affaire
+AffairesDesc=Cette vue présente toutes les affaires (vos habilitations vous offrant une vue exhaustive).
+AffairesPublicDesc=Cette vue présente toutes les affaires pour lesquels vous êtes habilité à avoir une visibilité.

@@ -1110,9 +1110,9 @@ if ($search_project_user == $user->id) {
 	$texthelp .= $langs->trans("MyAffairesDesc");
 } else {
 	if ($user->hasRight('projet', 'all', 'lire') && !$socid) {
-		$texthelp .= $langs->trans("ProjectsDesc");
+		$texthelp .= $langs->trans("AffairesDesc");
 	} else {
-		$texthelp .= $langs->trans("ProjectsPublicDesc");
+		$texthelp .= $langs->trans("AffairesPublicDesc");
 	}
 }
 
