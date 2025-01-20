@@ -47,3 +47,5 @@ MyWidgetDescription = My widget description
 MyAffairesDesc = Cette vue affiche toutes les affaires
 AffaireContact = Contacts de l'affaire
 EnterReference = Saisir référence
+ConfirmCloneAffaire = Êtes-vous sûr de vouloir cloner cette affaire ?
+CloneAffaireFiles = Cloner les pièces jointes de l'affaire

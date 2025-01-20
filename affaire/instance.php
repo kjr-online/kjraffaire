@@ -246,6 +246,7 @@ if ($object->id > 0) {
 		$object->next_prev_filter = "rowid IN (".$db->sanitize(count($objectsListId) ? implode(',', array_keys($objectsListId)) : '0').")";
 	}
 
+    $object->picto = 'fa-briefcase';
 	dol_banner_tab($object, 'ref', $linkback, 1, 'ref', 'ref', $morehtmlref);
 
     // Liste des extrafields à afficher dans chaque colonne
@@ -256,164 +257,156 @@ if ($object->id > 0) {
     $used_extrafields = array_merge($extrafields_left, $extrafields_right);
     $excluded_extrafields = ['affaire', 'type_affaire'];
 
-        // Récupération des extrafields restants, en excluant ceux à ignorer
-        $remaining_extrafields = array_diff(
-            array_keys($extrafields->attributes['projet']['label']),
-            array_merge($used_extrafields, $excluded_extrafields)
-        );
+    // Récupération des extrafields restants, en excluant ceux à ignorer
+    $remaining_extrafields = array_diff(
+        array_keys($extrafields->attributes['projet']['label']),
+        array_merge($used_extrafields, $excluded_extrafields)
+    );
 
-        print '<div class="fichecenter">';
+    print '<hr/><br/><div class="fichecenter">';
 
-        // Colonne gauche
-        print '<div class="fichehalfleft">';
-        print '<table class="border tableforfield centpercent">';
+    // Colonne gauche
+    print '<div class="fichehalfleft">';
+    print '<table class="border tableforfield centpercent">';
 
-        // Liste des extrafields à gauche
-        foreach ($extrafields_left as $key) {
-            if (isset($extrafields->attributes['projet']['label'][$key])) {
-                $label = $langs->trans($extrafields->attributes['projet']['label'][$key]);
-                $value = $object->array_options['options_'.$key];
+    // Liste des extrafields à gauche
+    foreach ($extrafields_left as $key) {
+        if (isset($extrafields->attributes['projet']['label'][$key])) {
+            $label = $langs->trans($extrafields->attributes['projet']['label'][$key]);
+            $value = $object->array_options['options_'.$key];
 
-                print '<tr>';
-                print '<td class="titlefield">'.$label.'</td>';
-                print '<td>';
+            print '<tr>';
+            print '<td class="titlefield">'.$label.'</td>';
+            print '<td>';
 
-                // Mode édition pour ce champ
-                if (isset($extrafield_edit_key) && $extrafield_edit_key === $key) {
-                    print '<form action="'.$_SERVER['PHP_SELF'].'" method="POST">';
-                    print '<input type="hidden" name="token" value="'.newToken().'">';
-                    print '<input type="hidden" name="action" value="update_extrafield">';
-                    print '<input type="hidden" name="id" value="'.$object->id.'">';
-                    print '<input type="hidden" name="key" value="'.$key.'">';
-                    print $extrafields->showInputField($key, $object->array_options['options_'.$key], '', 'options_', '', '', $object->id, $object->table_element);
-                    print ' <button type="submit" class="button">'.$langs->trans("Save").'</button>';
-                    print ' <a href="'.$_SERVER['PHP_SELF'].'?id='.$object->id.'" class="button">'.$langs->trans("Cancel").'</a>';
-                    print '</form>';
-                } else {
-                    // Affichage en mode lecture
-                    if ($extrafields->attributes['projet']['type'][$key] === 'date' && !empty($value)) {
-                        print dol_print_date($value, 'day');
-                    } elseif ($extrafields->attributes['projet']['type'][$key] === 'sellist' && !empty($value)) {
-                        $options = $extrafields->attributes['projet']['param'][$key]['options'];
-                        if (!empty($options)) {
-                            $option_parts = explode(':', key($options));
-                            if (count($option_parts) >= 3) {
-                                $table = $option_parts[0];
-                                $field_label = $option_parts[1];
-                                $field_id = $option_parts[2];
-                                $sql = "SELECT ".$db->escape($field_label)." as label FROM ".MAIN_DB_PREFIX.$table." WHERE ".$db->escape($field_id)." = ".((int) $value);
-                                $resql = $db->query($sql);
-                                if ($resql) {
-                                    $obj = $db->fetch_object($resql);
-                                    if ($obj) {
-                                        print $langs->trans($obj->label);
-                                    } else {
-                                        print $langs->trans("Unknown"); // Affiche une erreur si aucun libellé trouvé
-                                    }
+            // Mode édition pour ce champ
+            if (isset($extrafield_edit_key) && $extrafield_edit_key === $key) {
+                print '<form action="'.$_SERVER['PHP_SELF'].'" method="POST">';
+                print '<input type="hidden" name="token" value="'.newToken().'">';
+                print '<input type="hidden" name="action" value="update_extrafield">';
+                print '<input type="hidden" name="id" value="'.$object->id.'">';
+                print '<input type="hidden" name="key" value="'.$key.'">';
+                print $extrafields->showInputField($key, $object->array_options['options_'.$key], '', 'options_', '', '', $object->id, $object->table_element);
+                print ' <button type="submit" class="button">'.$langs->trans("Save").'</button>';
+                print ' <a href="'.$_SERVER['PHP_SELF'].'?id='.$object->id.'" class="button">'.$langs->trans("Cancel").'</a>';
+                print '</form>';
+            } else {
+                // Affichage en mode lecture
+                if ($extrafields->attributes['projet']['type'][$key] === 'date' && !empty($value)) {
+                    print dol_print_date($value, 'day');
+                } elseif ($extrafields->attributes['projet']['type'][$key] === 'sellist' && !empty($value)) {
+                    $options = $extrafields->attributes['projet']['param'][$key]['options'];
+                    if (!empty($options)) {
+                        $option_parts = explode(':', key($options));
+                        if (count($option_parts) >= 3) {
+                            $table = $option_parts[0];
+                            $field_label = $option_parts[1];
+                            $field_id = $option_parts[2];
+                            $sql = "SELECT ".$db->escape($field_label)." as label FROM ".MAIN_DB_PREFIX.$table." WHERE ".$db->escape($field_id)." = ".((int) $value);
+                            $resql = $db->query($sql);
+                            if ($resql) {
+                                $obj = $db->fetch_object($resql);
+                                if ($obj) {
+                                    print $langs->trans($obj->label);
                                 } else {
-                                    print $langs->trans("Error");
+                                    print $langs->trans("Unknown"); // Affiche une erreur si aucun libellé trouvé
                                 }
                             } else {
                                 print $langs->trans("Error");
                             }
                         } else {
-                            print $langs->trans("NoOption");
+                            print $langs->trans("Error");
                         }
                     } else {
-                        print ($value === "0" || empty($value)) ? '' : nl2br($value);
+                        print $langs->trans("NoOption");
                     }
-                    print ' <a href="'.$_SERVER['PHP_SELF'].'?action=edit_extrafield&key='.$key.'&id='.$object->id.'" class="editfielda">'.img_edit($langs->transnoentitiesnoconv('Edit')).'</a>';
-                }
-
-                print '</td>';
-                print '</tr>';
-            }
-        }
-
-
-
-        print '</table>';
-        print '</div>';
-
-        // Colonne droite
-        print '<div class="fichehalfright">';
-        print '<table class="border tableforfield centpercent">';
-
-        // Liste des extrafields à droite
-        foreach ($extrafields_right as $key) {
-            if (isset($extrafields->attributes['projet']['label'][$key])) {
-                $label = $langs->trans($extrafields->attributes['projet']['label'][$key]);
-                $value = $object->array_options['options_'.$key];
-
-                print '<tr>';
-                print '<td class="titlefield">'.$label.'</td>';
-                print '<td>';
-
-                // Mode édition pour ce champ
-                if (isset($extrafield_edit_key) && $extrafield_edit_key === $key) {
-                    print '<form action="'.$_SERVER['PHP_SELF'].'" method="POST">';
-                    print '<input type="hidden" name="token" value="'.newToken().'">';
-                    print '<input type="hidden" name="action" value="update_extrafield">';
-                    print '<input type="hidden" name="id" value="'.$object->id.'">';
-                    print '<input type="hidden" name="key" value="'.$key.'">';
-                    print $extrafields->showInputField($key, $object->array_options['options_'.$key], '', 'options_', '', '', $object->id, $object->table_element);
-                    print ' <button type="submit" class="button">'.$langs->trans("Save").'</button>';
-                    print ' <a href="'.$_SERVER['PHP_SELF'].'?id='.$object->id.'" class="button">'.$langs->trans("Cancel").'</a>';
-                    print '</form>';
                 } else {
-                    // Affichage en mode lecture
-                    if ($extrafields->attributes['projet']['type'][$key] === 'date' && !empty($value)) {
-                        print dol_print_date($value, 'day');
-                    } elseif ($extrafields->attributes['projet']['type'][$key] === 'sellist' && !empty($value)) {
-                        $options = $extrafields->attributes['projet']['param'][$key]['options'];
-                        if (!empty($options)) {
-                            $option_parts = explode(':', key($options));
-                            if (count($option_parts) >= 3) {
-                                $table = $option_parts[0];
-                                $field_label = $option_parts[1];
-                                $field_id = $option_parts[2];
-                                $sql = "SELECT ".$db->escape($field_label)." as label FROM ".MAIN_DB_PREFIX.$table." WHERE ".$db->escape($field_id)." = ".((int) $value);
-                                $resql = $db->query($sql);
-                                if ($resql) {
-                                    $obj = $db->fetch_object($resql);
-                                    if ($obj) {
-                                        print $langs->trans($obj->label);
-                                    } else {
-                                        print $langs->trans("Unknown");
-                                    }
+                    print ($value === "0" || empty($value)) ? '' : nl2br($value);
+                }
+                print ' <a href="'.$_SERVER['PHP_SELF'].'?action=edit_extrafield&key='.$key.'&id='.$object->id.'" class="editfielda">'.img_edit($langs->transnoentitiesnoconv('Edit')).'</a>';
+            }
+
+            print '</td>';
+            print '</tr>';
+        }
+    }
+
+    print '</table>';
+    print '</div>';
+
+    // Colonne droite
+    print '<div class="fichehalfright">';
+    print '<table class="border tableforfield centpercent">';
+
+    // Liste des extrafields à droite
+    foreach ($extrafields_right as $key) {
+        if (isset($extrafields->attributes['projet']['label'][$key])) {
+            $label = $langs->trans($extrafields->attributes['projet']['label'][$key]);
+            $value = $object->array_options['options_'.$key];
+
+            print '<tr>';
+            print '<td class="titlefield">'.$label.'</td>';
+            print '<td>';
+
+            // Mode édition pour ce champ
+            if (isset($extrafield_edit_key) && $extrafield_edit_key === $key) {
+                print '<form action="'.$_SERVER['PHP_SELF'].'" method="POST">';
+                print '<input type="hidden" name="token" value="'.newToken().'">';
+                print '<input type="hidden" name="action" value="update_extrafield">';
+                print '<input type="hidden" name="id" value="'.$object->id.'">';
+                print '<input type="hidden" name="key" value="'.$key.'">';
+                print $extrafields->showInputField($key, $object->array_options['options_'.$key], '', 'options_', '', '', $object->id, $object->table_element);
+                print ' <button type="submit" class="button">'.$langs->trans("Save").'</button>';
+                print ' <a href="'.$_SERVER['PHP_SELF'].'?id='.$object->id.'" class="button">'.$langs->trans("Cancel").'</a>';
+                print '</form>';
+            } else {
+                // Affichage en mode lecture
+                if ($extrafields->attributes['projet']['type'][$key] === 'date' && !empty($value)) {
+                    print dol_print_date($value, 'day');
+                } elseif ($extrafields->attributes['projet']['type'][$key] === 'sellist' && !empty($value)) {
+                    $options = $extrafields->attributes['projet']['param'][$key]['options'];
+                    if (!empty($options)) {
+                        $option_parts = explode(':', key($options));
+                        if (count($option_parts) >= 3) {
+                            $table = $option_parts[0];
+                            $field_label = $option_parts[1];
+                            $field_id = $option_parts[2];
+                            $sql = "SELECT ".$db->escape($field_label)." as label FROM ".MAIN_DB_PREFIX.$table." WHERE ".$db->escape($field_id)." = ".((int) $value);
+                            $resql = $db->query($sql);
+                            if ($resql) {
+                                $obj = $db->fetch_object($resql);
+                                if ($obj) {
+                                    print $langs->trans($obj->label);
                                 } else {
-                                    print $langs->trans("Error");
+                                    print $langs->trans("Unknown");
                                 }
                             } else {
                                 print $langs->trans("Error");
                             }
                         } else {
-                            print $langs->trans("NoOption");
+                            print $langs->trans("Error");
                         }
                     } else {
-                        print ($value === "0" || empty($value)) ? '' : nl2br($value);
+                        print $langs->trans("NoOption");
                     }
-                    print ' <a href="'.$_SERVER['PHP_SELF'].'?action=edit_extrafield&key='.$key.'&id='.$object->id.'" class="editfielda">'.img_edit($langs->transnoentitiesnoconv('Edit')).'</a>';
+                } else {
+                    print ($value === "0" || empty($value)) ? '' : nl2br($value);
                 }
-
-                print '</td>';
-                print '</tr>';
+                print ' <a href="'.$_SERVER['PHP_SELF'].'?action=edit_extrafield&key='.$key.'&id='.$object->id.'" class="editfielda">'.img_edit($langs->transnoentitiesnoconv('Edit')).'</a>';
             }
+
+            print '</td>';
+            print '</tr>';
         }
+    }
 
-        print '</table>';
-        print '</div>';
-
-        print '</div>';
-
-        print '<div class="clearboth"></div>';
-
-
-		print '</div>';
-		print '</div>';
-
-		print '<div class="clearboth"></div>';
-	
+    print '</table>';
+    print '</div>';
+    print '</div>';
+    print '<div class="clearboth"></div>';
+	print '</div>';
+	print '</div>';
+	print '<div class="clearboth"></div>';
 
 	print dol_get_fiche_end();
 

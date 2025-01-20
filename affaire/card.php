@@ -702,16 +702,8 @@ $help_url = "EN:Module_Projects|FR:Module_Projets|ES:M&oacute;dulo_Proyectos|DE:
 
 llxHeader("", $title, $help_url);
 
-$titleboth = $langs->trans("LeadsOrProjects");
-$titlenew = $langs->trans("NewLeadOrProject"); // Leads and opportunities by default
-if (!getDolGlobalInt('PROJECT_USE_OPPORTUNITIES')) {
-	$titleboth = $langs->trans("Projects");
-	$titlenew = $langs->trans("NewProject");
-}
-if (getDolGlobalInt('PROJECT_USE_OPPORTUNITIES') == 2) { // 2 = leads only
-	$titleboth = $langs->trans("Leads");
-	$titlenew = $langs->trans("NewLead");
-}
+$titleboth = "Nouvelle affaire";
+$titlenew = "Nouvelle affaire";
 
 if ($action == 'create' && $user->hasRight('projet', 'creer')) {
 	$object->array_options['options_instance'] = 1;
@@ -724,7 +716,7 @@ if ($action == 'create' && $user->hasRight('projet', 'creer')) {
 		$thirdparty->fetch($socid);
 	}
 
-	print load_fiche_titre($titlenew, '', 'project');
+	print load_fiche_titre($titlenew, '', 'fa-briefcase');
 
 	print '<form action="'.$_SERVER["PHP_SELF"].'" method="POST">';
 	print '<input type="hidden" name="action" value="add">';
@@ -923,6 +915,7 @@ if ($action == 'create' && $user->hasRight('projet', 'creer')) {
 	$reshook = $hookmanager->executeHooks('formObjectOptions', $parameters, $object, $action); // Note that $action and $object may have been modified by hook
 	print $hookmanager->resPrint;
 	if (empty($reshook)) {
+		print '<tr><td colspan="2"><hr style="border: 0,1px solid #ccc;"></td></tr>';
 		print $object->showOptionals($extrafields, 'create');
 	}
 
@@ -1013,11 +1006,11 @@ if ($action == 'create' && $user->hasRight('projet', 'creer')) {
 			2 => array('type' => 'checkbox', 'name' => 'clone_tasks', 'label' => $langs->trans("CloneTasks"), 'value' => true),
 			3 => array('type' => 'checkbox', 'name' => 'move_date', 'label' => $langs->trans("CloneMoveDate"), 'value' => true),
 			4 => array('type' => 'checkbox', 'name' => 'clone_notes', 'label' => $langs->trans("CloneNotes"), 'value' => true),
-			5 => array('type' => 'checkbox', 'name' => 'clone_project_files', 'label' => $langs->trans("CloneProjectFiles"), 'value' => false),
+			5 => array('type' => 'checkbox', 'name' => 'clone_project_files', 'label' => $langs->trans("CloneAffaireFiles"), 'value' => false),
 			6 => array('type' => 'checkbox', 'name' => 'clone_task_files', 'label' => $langs->trans("CloneTaskFiles"), 'value' => false)
 		);
 
-		print $form->formconfirm($_SERVER["PHP_SELF"]."?id=".$object->id, $langs->trans("ToClone"), $langs->trans("ConfirmCloneProject"), "confirm_clone", $formquestion, '', 1, 400, 590);
+		print $form->formconfirm($_SERVER["PHP_SELF"]."?id=".$object->id, $langs->trans("ToClone"), $langs->trans("ConfirmCloneAffaire"), "confirm_clone", $formquestion, '', 1, 400, 590);
 	}
 
 
@@ -1033,7 +1026,7 @@ if ($action == 'create' && $user->hasRight('projet', 'creer')) {
 		// Afficher les extras fields Instance
 		$object->array_options['options_instance'] = 1;
 		
-		print dol_get_fiche_head($head, 'project', $langs->trans("Project"), 0, ($object->public ? 'projectpub' : 'project'));
+		print dol_get_fiche_head($head, 'project', $langs->trans("Project"), 0, ($object->public ? 'fa-briefcase' : 'fa-briefcase'));
 
 		print '<table class="border centpercent">';
 
@@ -1424,6 +1417,7 @@ if ($action == 'create' && $user->hasRight('projet', 'creer')) {
 			$object->next_prev_filter = "rowid IN (".$db->sanitize(count($objectsListId) ? implode(',', array_keys($objectsListId)) : '0').")";
 		}
 
+		$object->picto = 'fa-briefcase';
 		dol_banner_tab($object, 'ref', $linkback, 1, 'ref', 'ref', $morehtmlref);
 
 		print '<div class="fichecenter">';
