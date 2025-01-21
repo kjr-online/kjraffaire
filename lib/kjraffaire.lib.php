@@ -350,7 +350,7 @@ function affaire_prepare_head(Project $project, $moreparam = '')
 		if (!empty($project->note_public)) {
 			$nbNote++;
 		}
-		$head[$h][0] = DOL_URL_ROOT.'/projet/note.php?id='.$project->id;
+		$head[$h][0] = DOL_URL_ROOT.'/custom/kjraffaire/tache/note.php?id='.$project->id;
 		$head[$h][1] = $langs->trans('Notes');
 		if ($nbNote > 0) {
 			$head[$h][1] .= '<span class="badge marginleftonlyshort">'.$nbNote.'</span>';
