@@ -112,11 +112,44 @@ $permissiondellink = $user->hasRight('projet', 'creer');	// Used by the include 
 /* Actions */
 
 // Mode édition d'un champ extrafield
+$filtered_options_js = json_encode("");
+$filtered_options_avocat = json_encode("");
 if ($action == 'edit_extrafield' && $user->rights->projet->creer) {
     $object->array_options['options_instance'] = 1;
     $key = GETPOST('key', 'alpha');
     if (isset($extrafields->attributes['projet']['label'][$key])) {
         $extrafield_edit_key = $key;
+        $champs_associers = [
+            'fk_socpeople_magistrat' => 'options_fk_soc_magistrat',
+            'fk_socpeople_avocat_postulant' => 'options_fk_soc_avocat_postulant'
+        ];
+        
+        if (array_key_exists($key, $champs_associers)) {
+            $fk_soc = $object->array_options[$champs_associers[$key]];
+            $options = [];
+
+            if (!empty($fk_soc)) {
+                $sql = "SELECT sp.rowid, sp.lastname, sp.firstname
+                        FROM ".MAIN_DB_PREFIX."socpeople sp
+                        WHERE sp.fk_soc = ".((int) $fk_soc)."
+                          AND sp.statut = 1";
+                $resql = $db->query($sql);
+
+                if ($resql) {
+                    while ($row = $db->fetch_object($resql)) {
+                        $contact_name = trim($row->firstname . ' ' . $row->lastname);
+                        $options[$row->rowid] = $contact_name;
+                    }
+                }
+            }
+
+            // Assigner options au bon champ
+            if ($key == 'fk_socpeople_magistrat') {
+                $filtered_options_js = json_encode($options);
+            } elseif ($key == 'fk_socpeople_avocat_postulant') {
+                $filtered_options_avocat = json_encode($options);
+            }
+        }
     } else {
         setEventMessages($langs->trans("InvalidExtraFieldKey"), null, 'errors');
     }
@@ -147,7 +180,7 @@ if ($action == 'update_extrafield' && $user->rights->projet->creer) {
         $object->array_options['options_'.$key] = $value; // Mettre à jour la valeur dans l'objet
         $result = $object->update($user); // Sauvegarder
         if ($result >= 0) {
-            setEventMessages($langs->trans("ExtraFieldUpdated"), null, 'mesgs');
+            setEventMessages("Valeur enregistrée avec succès", null, 'mesgs');
         } else {
             setEventMessages($object->error, $object->errors, 'errors');
         }
@@ -281,12 +314,14 @@ if ($object->id > 0) {
 
             // Mode édition pour ce champ
             if (isset($extrafield_edit_key) && $extrafield_edit_key === $key) {
+                $filtered_options = isset($extrafields->attributes['projet']['param'][$key]['filtered_options']) ? $extrafields->attributes['projet']['param'][$key]['filtered_options'] : null;
+                $filtered_options_json = json_encode($filtered_options);
                 print '<form action="'.$_SERVER['PHP_SELF'].'" method="POST">';
                 print '<input type="hidden" name="token" value="'.newToken().'">';
                 print '<input type="hidden" name="action" value="update_extrafield">';
                 print '<input type="hidden" name="id" value="'.$object->id.'">';
                 print '<input type="hidden" name="key" value="'.$key.'">';
-                print $extrafields->showInputField($key, $object->array_options['options_'.$key], '', 'options_', '', '', $object->id, $object->table_element);
+                print $extrafields->showInputField($key, $object->array_options['options_'.$key], '', 'options_', '', 'data-options=\''.$filtered_options_json.'\'', $object->id, $object->table_element);
                 print ' <button type="submit" class="button">'.$langs->trans("Save").'</button>';
                 print ' <a href="'.$_SERVER['PHP_SELF'].'?id='.$object->id.'" class="button">'.$langs->trans("Cancel").'</a>';
                 print '</form>';
@@ -350,12 +385,14 @@ if ($object->id > 0) {
 
             // Mode édition pour ce champ
             if (isset($extrafield_edit_key) && $extrafield_edit_key === $key) {
+                $filtered_options = isset($extrafields->attributes['projet']['param'][$key]['filtered_options']) ? $extrafields->attributes['projet']['param'][$key]['filtered_options'] : null;
+                $filtered_options_json = json_encode($filtered_options);
                 print '<form action="'.$_SERVER['PHP_SELF'].'" method="POST">';
                 print '<input type="hidden" name="token" value="'.newToken().'">';
                 print '<input type="hidden" name="action" value="update_extrafield">';
                 print '<input type="hidden" name="id" value="'.$object->id.'">';
                 print '<input type="hidden" name="key" value="'.$key.'">';
-                print $extrafields->showInputField($key, $object->array_options['options_'.$key], '', 'options_', '', '', $object->id, $object->table_element);
+                print $extrafields->showInputField($key, $object->array_options['options_'.$key], '', 'options_', '', 'data-options=\''.$filtered_options_json.'\'', $object->id, $object->table_element);
                 print ' <button type="submit" class="button">'.$langs->trans("Save").'</button>';
                 print ' <a href="'.$_SERVER['PHP_SELF'].'?id='.$object->id.'" class="button">'.$langs->trans("Cancel").'</a>';
                 print '</form>';
@@ -399,6 +436,45 @@ if ($object->id > 0) {
             print '</tr>';
         }
     }
+    print '<script>
+        document.addEventListener(\'DOMContentLoaded\', function () {
+            const fieldsToUpdate = {
+                "options_fk_socpeople_magistratoptions_": '.$filtered_options_js.',
+                "options_fk_socpeople_avocat_postulantoptions_": '.$filtered_options_avocat.'
+            };
+
+            Object.keys(fieldsToUpdate).forEach(function (fieldId) {
+                const selectField = document.getElementById(fieldId);
+                if (selectField) {
+                    const filteredOptions = fieldsToUpdate[fieldId];
+                    const currentValue = selectField.value;
+
+                    selectField.innerHTML = "";
+
+                    // Ajouter option vide
+                    const emptyOption = document.createElement("option");
+                    emptyOption.value = "";
+                    emptyOption.textContent = " ";
+                    selectField.appendChild(emptyOption);
+
+                    // Ajouter nouvelles options
+                    Object.keys(filteredOptions).forEach(function (key) {
+                        const option = document.createElement("option");
+                        option.value = key;
+                        option.textContent = filteredOptions[key];
+
+                        if (key == currentValue) {
+                            option.selected = true;
+                        }
+
+                        selectField.appendChild(option);
+                    });
+                } else {
+                    console.error(`Élément avec l\'ID ${fieldId} introuvable.`);
+                }
+            });
+        });
+    </script>';
 
     print '</table>';
     print '</div>';
