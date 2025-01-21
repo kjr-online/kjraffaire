@@ -1417,7 +1417,9 @@ if ($action == 'create' && $user->hasRight('projet', 'creer')) {
 		}
 
 		$object->picto = 'fa-briefcase';
+		$object->element = 'fa-briefcase';
 		dol_banner_tab($object, 'ref', $linkback, 1, 'ref', 'ref', $morehtmlref);
+		$object->element = 'project';
 
 		print '<div class="fichecenter">';
 		print '<div class="fichehalfleft">';

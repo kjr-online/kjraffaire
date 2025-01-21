@@ -960,7 +960,9 @@ if (($id > 0 || !empty($ref)) || $projectidforalltimes > 0 || $allprojectforuser
 			}
 
 			$projectstatic->picto = 'fa-briefcase';
+			$projectstatic->element = 'fa-briefcase';
 			dol_banner_tab($projectstatic, 'project_ref', $linkback, 1, 'ref', 'ref', $morehtmlref, $param);
+			$projectstatic->element = 'project';
 
 			print '<div class="fichecenter">';
 			print '<div class="fichehalfleft">';
@@ -1141,7 +1143,9 @@ if (($id > 0 || !empty($ref)) || $projectidforalltimes > 0 || $allprojectforuser
 		}
 
 		$object->picto = 'fa-briefcase';
+		$object->element = 'fa-briefcase';
 		dol_banner_tab($object, 'ref', $linkback, 1, 'ref', 'ref', $morehtmlref, $param);
+		$object->element = 'project';
 
 		print '<div class="fichecenter">';
 		print '<div class="fichehalfleft">';

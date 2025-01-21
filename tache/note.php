@@ -123,7 +123,9 @@ if ($id > 0 || !empty($ref)) {
 
 	
 	$object->picto = 'fa-briefcase';
+	$object->element = 'fa-briefcase';
 	dol_banner_tab($object, 'ref', $linkback, 1, 'ref', 'ref', $morehtmlref);
+	$object->element = 'project';
 
 
 	print '<div class="fichecenter">';

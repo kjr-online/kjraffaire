@@ -280,7 +280,9 @@ if ($object->id > 0) {
 	}
 
     $object->picto = 'fa-briefcase';
+    $object->element = 'fa-briefcase';
 	dol_banner_tab($object, 'ref', $linkback, 1, 'ref', 'ref', $morehtmlref);
+    $object->element = 'project';
 
     // Liste des extrafields à afficher dans chaque colonne
     $extrafields_left = ['fk_kjraffaire_dico_juridiction', 'fk_kjraffaire_dico_action_juridique', 'chambre', 'no_role', 'fk_soc_magistrat', 'fk_socpeople_magistrat'];
