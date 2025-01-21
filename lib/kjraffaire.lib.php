@@ -176,7 +176,7 @@ function affaire_prepare_head(Project $project, $moreparam = '')
 			}
 		}
 
-		$head[$h][0] = DOL_URL_ROOT.'/projet/tasks/time.php?withproject=1&projectid='.((int) $project->id).($moreparam ? '&'.$moreparam : '');
+		$head[$h][0] = DOL_URL_ROOT.'/custom/kjraffaire/tache/time.php?withproject=1&projectid='.((int) $project->id).($moreparam ? '&'.$moreparam : '');
 		$head[$h][1] = $langs->trans("TimeSpent");
 		if ($nbTimeSpent > 0) {
 			$head[$h][1] .= '<span class="badge marginleftonlyshort">...</span>';
