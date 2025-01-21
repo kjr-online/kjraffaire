@@ -376,7 +376,7 @@ if (!empty($project_ref) && !empty($withproject)) {
 		if (count($tasksarray) > 0) {
 			$id = $tasksarray[0]->id;
 		} else {
-			header("Location: " . DOL_URL_ROOT . '/projet/tasks.php?id=' . $projectstatic->id . ($withproject ? '&withproject=1' : '') . (empty($mode) ? '' : '&mode=' . $mode));
+			header("Location: " . DOL_URL_ROOT . '/custom/kjraffaire/tache/tasks.php?id=' . $projectstatic->id . ($withproject ? '&withproject=1' : '') . (empty($mode) ? '' : '&mode=' . $mode));
 			exit;
 		}
 	}
@@ -1114,7 +1114,7 @@ if (($id > 0 || !empty($ref)) || $projectidforalltimes > 0 || $allprojectforuser
 
 		$param = ($withproject ? '&withproject=1' : '');
 		$param .= ($param ? '&' : '') . 'id=' . $object->id;        // ID of task
-		$linkback = $withproject ? '<a href="' . DOL_URL_ROOT . '/projet/tasks.php?id=' . $projectstatic->id . '">' . $langs->trans("BackToList") . '</a>' : '';
+		$linkback = $withproject ? '<a href="' . DOL_URL_ROOT . '/custom/kjraffaire/tache/tasks.php?id=' . $projectstatic->id . '">' . $langs->trans("BackToList") . '</a>' : '';
 
 		if (!GETPOST('withproject') || empty($projectstatic->id)) {
 			$projectsListId = $projectstatic->getProjectsAuthorizedForUser($user, 0, 1);
