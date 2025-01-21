@@ -142,7 +142,7 @@ function affaire_prepare_head(Project $project, $moreparam = '')
 			$nbTasks = count($taskstatic->getTasksArray(0, 0, $project->id, 0, 0));
 			dol_setcache($cachekey, $nbTasks, 120);	// If setting cache fails, this is not a problem, so we do not test result.
 		}
-		$head[$h][0] = DOL_URL_ROOT.'/projet/tasks.php?id='.((int) $project->id).($moreparam ? '&'.$moreparam : '');
+		$head[$h][0] = DOL_URL_ROOT.'/custom/kjraffaire/tache/tasks.php?id='.((int) $project->id).($moreparam ? '&'.$moreparam : '');
 		$head[$h][1] = $langs->trans("Tasks");
 		if ($nbTasks > 0) {
 			$head[$h][1] .= '<span class="badge marginleftonlyshort">'.($nbTasks).'</span>';
