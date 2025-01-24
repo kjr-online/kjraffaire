@@ -531,6 +531,36 @@ if (!$user->hasRight('projet', 'all', 'lire')) {
             }
         }
     }
+
+	// Récup des rowid des types de contact ayant element = 'kjraffaire'
+    $contactTypeIds = array();
+    $sqlContactTypes = "SELECT rowid FROM ".MAIN_DB_PREFIX."c_type_contact WHERE element = 'kjraffaire'";
+    $resqlContactTypes = $db->query($sqlContactTypes);
+    if ($resqlContactTypes) {
+        while ($objContactType = $db->fetch_object($resqlContactTypes)) {
+            $contactTypeIds[] = $objContactType->rowid;
+        }
+    } else {
+        dol_print_error($db);
+    }
+
+    // Ajout des projets ayant la visibilité "Contacts associés"
+    if (!empty($contactTypeIds)) {
+        $sqlContacts = "SELECT ec.element_id 
+                    FROM ".MAIN_DB_PREFIX."element_contact AS ec
+                    INNER JOIN ".MAIN_DB_PREFIX."projet AS p ON ec.element_id = p.rowid
+                    WHERE ec.fk_c_type_contact IN (".implode(',', $contactTypeIds).")
+                      AND ec.fk_socpeople = ".$user->id."
+                      AND p.public = 0"; // Vérifie que le projet est "Contacts associés"
+        $resqlContacts = $db->query($sqlContacts);
+        if ($resqlContacts) {
+            while ($objContact = $db->fetch_object($resqlContacts)) {
+                $projectsListId .= ($projectsListId ? ',' : '') . $objContact->element_id;
+            }
+        } else {
+            dol_print_error($db);
+        }
+    }
 }
 
 // Get id of types of contacts for projects (This list never contains a lot of elements)
