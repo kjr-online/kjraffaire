@@ -782,7 +782,18 @@ function kjr_show_affaires($conf, $langs, $db, $object, $backtopage = '', $nocre
 						}
 						// Ref
 						print '<td class="nowraponall">';
-						print $projecttmp->getNomUrl(1, '', 0, '', '-', 0, 1, '', 'project:'.$_SERVER["PHP_SELF"].'?socid=__SOCID__');
+
+						$iconStyle = $object->public == 1 
+							? 'color: #986C6A;'
+							: ($object->public == 0 
+								? 'color: #6C6AA8;'
+								: 'color: #6CA89C;');
+			
+						$url = dol_buildpath('/custom/kjraffaire/affaire/card.php', 1) . '?id=' . $obj->id . '&save_lastsearch_values=1';
+			
+						print '<i class="fas fa-briefcase paddingrightonly valignmiddle" style="'.$iconStyle.'"></i>';
+						print '<a href="'.$url.'">'.htmlspecialchars($obj->ref).'</a>';
+			
 						print '</td>';
 
 						// Label
