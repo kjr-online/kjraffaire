@@ -421,3 +421,509 @@ function affaire_prepare_head(Project $project, $moreparam = '')
 
 	return $head;
 }
+
+/**
+ * 		Show html area for list of projects
+ *
+ *		@param	Conf		$conf			Object conf
+ * 		@param	Translate	$langs			Object langs
+ * 		@param	DoliDB		$db				Database handler
+ * 		@param	Object		$object			Third party object
+ *      @param  string		$backtopage		Url to go once contact is created
+ *      @param  int         $nocreatelink   1=Hide create project link
+ *      @param	string		$morehtmlright	More html on right of title
+ *      @return	int
+ */
+function kjr_show_projects($conf, $langs, $db, $object, $backtopage = '', $nocreatelink = 0, $morehtmlright = '')
+{
+	global $user, $action, $hookmanager, $form, $massactionbutton, $massaction, $arrayofselected, $arrayofmassactions;
+
+	$i = -1;
+
+	if (isModEnabled('project') && $user->hasRight('projet', 'lire')) {
+		$langs->load("projects");
+
+		$newcardbutton = '';
+		if (isModEnabled('project') && $user->hasRight('projet', 'creer') && empty($nocreatelink)) {
+			$newcardbutton .= dolGetButtonTitle($langs->trans('AddProject'), '', 'fa fa-plus-circle', DOL_URL_ROOT.'/projet/card.php?socid='.$object->id.'&amp;action=create&amp;backtopage='.urlencode($backtopage));
+		}
+
+		print "\n";
+		print load_fiche_titre($langs->trans("ProjectsDedicatedToThisThirdParty"), $newcardbutton.$morehtmlright, '');
+
+		print '<div class="div-table-responsive">'."\n";
+		print '<table class="noborder centpercent">';
+
+		$sql  = "SELECT p.rowid as id, p.entity, p.title, p.ref, p.public, p.dateo as do, p.datee as de, p.fk_statut as status, p.fk_opp_status, p.opp_amount, p.opp_percent, p.tms as date_modification, p.budget_amount";
+		$sql .= ", cls.code as opp_status_code";
+		$sql .= " FROM ".MAIN_DB_PREFIX."projet as p";
+		$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."c_lead_status as cls on p.fk_opp_status = cls.rowid";
+		$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."projet_extrafields as pe on p.rowid = pe.fk_object";
+		$sql .= " WHERE p.fk_soc = ".((int) $object->id);
+		$sql .= " AND p.entity IN (".getEntity('project').")";
+		$sql .= " AND pe.affaire IS NULL";
+		$sql .= " ORDER BY p.dateo DESC";
+
+		$result = $db->query($sql);
+		if ($result) {
+			$num = $db->num_rows($result);
+
+			print '<tr class="liste_titre">';
+			if (getDolGlobalString('MAIN_CHECKBOX_LEFT_COLUMN')) {
+				print '<td class="center">';
+				$selectedfields = (is_array($arrayofmassactions) && count($arrayofmassactions) ? $form->showCheckAddButtons('checkforselect', 1) : '');
+				print $selectedfields;
+				print '</td>';
+			}
+			print '<td>'.$langs->trans("Ref").'</td>';
+			print '<td>'.$langs->trans("Name").'</td>';
+			print '<td class="center">'.$langs->trans("DateStart").'</td>';
+			print '<td class="center">'.$langs->trans("DateEnd").'</td>';
+			print '<td class="right">'.$langs->trans("OpportunityAmountShort").'</td>';
+			print '<td class="center">'.$langs->trans("OpportunityStatusShort").'</td>';
+			print '<td class="right">'.$langs->trans("OpportunityProbabilityShort").'</td>';
+			print '<td class="right">'.$langs->trans("Status").'</td>';
+			if (!getDolGlobalString('MAIN_CHECKBOX_LEFT_COLUMN')) {
+				print '<td class="center">';
+				$selectedfields = (is_array($arrayofmassactions) && count($arrayofmassactions) ? $form->showCheckAddButtons('checkforselect', 1) : '');
+				print $selectedfields;
+				print '</td>';
+			}
+			print '</tr>';
+
+			if ($num > 0) {
+				require_once DOL_DOCUMENT_ROOT.'/projet/class/project.class.php';
+
+				$projecttmp = new Project($db);
+
+				$i = 0;
+
+				while ($i < $num) {
+					$obj = $db->fetch_object($result);
+					$projecttmp->fetch($obj->id);
+
+					// To verify role of users
+					$userAccess = $projecttmp->restrictedProjectArea($user);
+
+					if ($user->hasRight('projet', 'lire') && $userAccess > 0) {
+						print '<tr class="oddeven">';
+
+						if (getDolGlobalString('MAIN_CHECKBOX_LEFT_COLUMN')) {
+							print '<td class="nowrap center actioncolumn">';
+							if ($massactionbutton || $massaction) {
+								$selected = 0;
+								if (in_array($obj->id, $arrayofselected)) {
+									$selected = 1;
+								}
+								print '<input id="cb'.$obj->id.'" class="flat checkforselect" type="checkbox" name="toselect[]" value="'.$obj->id.'"'.($selected ? ' checked="checked"' : '').'>';
+							}
+							print '</td>';
+						}
+						// Ref
+						print '<td class="nowraponall">';
+						print $projecttmp->getNomUrl(1, '', 0, '', '-', 0, 1, '', 'project:'.$_SERVER["PHP_SELF"].'?socid=__SOCID__');
+						print '</td>';
+
+						// Label
+						print '<td class="tdoverflowmax200" title="'.dol_escape_htmltag($obj->title).'">'.dol_escape_htmltag($obj->title).'</td>';
+						// Date start
+						print '<td class="center">'.dol_print_date($db->jdate($obj->do), "day").'</td>';
+						// Date end
+						print '<td class="center">'.dol_print_date($db->jdate($obj->de), "day").'</td>';
+						// Opp amount
+						print '<td class="right">';
+						if ($obj->opp_status_code) {
+							print '<span class="amount">'.price($obj->opp_amount, 1, '', 1, -1, -1, '').'</span>';
+						}
+						print '</td>';
+						// Opp status
+						print '<td class="center">';
+						if ($obj->opp_status_code) {
+							print $langs->trans("OppStatus".$obj->opp_status_code);
+						}
+						print '</td>';
+						// Opp percent
+						print '<td class="right">';
+						if ($obj->opp_percent) {
+							print price($obj->opp_percent, 1, '', 1, 0).'%';
+						}
+						print '</td>';
+						// Status
+						print '<td class="right">'.$projecttmp->getLibStatut(5).'</td>';
+
+						// Action column
+						if (!getDolGlobalString('MAIN_CHECKBOX_LEFT_COLUMN')) {
+							print '<td class="nowrap center actioncolumn">';
+							if ($massactionbutton || $massaction) {
+								$selected = 0;
+								if (in_array($obj->id, $arrayofselected)) {
+									$selected = 1;
+								}
+								print '<input id="cb'.$obj->id.'" class="flat checkforselect" type="checkbox" name="toselect[]" value="'.$obj->id.'"'.($selected ? ' checked="checked"' : '').'>';
+							}
+							print '</td>';
+						}
+						print '</tr>';
+					}
+					$i++;
+				}
+			} else {
+				print '<tr class="oddeven"><td colspan="9"><span class="opacitymedium">'.$langs->trans("None").'</span></td></tr>';
+			}
+			$db->free($result);
+		} else {
+			dol_print_error($db);
+		}
+
+		//projects linked to that thirdpart because of a people of that company is linked to a project
+		if (getDolGlobalString('PROJECT_DISPLAY_LINKED_BY_CONTACT')) {
+			print "\n";
+			print load_fiche_titre($langs->trans("ProjectsLinkedToThisThirdParty"), '', '');
+
+
+			print '<div class="div-table-responsive">'."\n";
+			print '<table class="noborder centpercent">';
+
+			$sql  = "SELECT p.rowid as id, p.entity, p.title, p.ref, p.public, p.dateo as do, p.datee as de, p.fk_statut as status, p.fk_opp_status, p.opp_amount, p.opp_percent, p.tms as date_update, p.budget_amount";
+			$sql .= ", cls.code as opp_status_code";
+			$sql .= " FROM ".MAIN_DB_PREFIX."projet as p";
+			$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."c_lead_status as cls on p.fk_opp_status = cls.rowid";
+			$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."element_contact as ec on p.rowid = ec.element_id";
+			$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."socpeople as sc on ec.fk_socpeople = sc.rowid";
+			$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."c_type_contact as tc on ec.fk_c_type_contact = tc.rowid";
+			$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."projet_extrafields as pe on p.rowid = pe.fk_object";
+			$sql .= " WHERE sc.fk_soc = ".((int) $object->id);
+			$sql .= " AND p.entity IN (".getEntity('project').")";
+			$sql .= " AND tc.element = 'project' AND tc.source = 'external'";
+			$sql .= " AND pe.affaire IS NULL";
+			$sql .= " ORDER BY p.dateo DESC";
+
+			$result = $db->query($sql);
+			if ($result) {
+				$num = $db->num_rows($result);
+
+				print '<tr class="liste_titre">';
+				print '<td>'.$langs->trans("Ref").'</td>';
+				print '<td>'.$langs->trans("Name").'</td>';
+				print '<td class="center">'.$langs->trans("DateStart").'</td>';
+				print '<td class="center">'.$langs->trans("DateEnd").'</td>';
+				print '<td class="right">'.$langs->trans("OpportunityAmountShort").'</td>';
+				print '<td class="center">'.$langs->trans("OpportunityStatusShort").'</td>';
+				print '<td class="right">'.$langs->trans("OpportunityProbabilityShort").'</td>';
+				print '<td class="right">'.$langs->trans("Status").'</td>';
+				print '</tr>';
+
+				if ($num > 0) {
+					require_once DOL_DOCUMENT_ROOT.'/projet/class/project.class.php';
+
+					$projecttmp = new Project($db);
+
+					$i = 0;
+
+					while ($i < $num) {
+						$obj = $db->fetch_object($result);
+						$projecttmp->fetch($obj->id);
+
+						// To verify role of users
+						$userAccess = $projecttmp->restrictedProjectArea($user);
+
+						if ($user->rights->projet->lire && $userAccess > 0) {
+							print '<tr class="oddeven">';
+
+							// Ref
+							print '<td class="nowraponall">';
+							print $projecttmp->getNomUrl(1, '', 0, '', '-', 0, 1, '', 'project:'.$_SERVER["PHP_SELF"].'?socid=__SOCID__');
+							print '</td>';
+
+							// Label
+							print '<td class="tdoverflowmax200" title="'.dol_escape_htmltag($obj->title).'">'.dol_escape_htmltag($obj->title).'</td>';
+							// Date start
+							print '<td class="center">'.dol_print_date($db->jdate($obj->do), "day").'</td>';
+							// Date end
+							print '<td class="center">'.dol_print_date($db->jdate($obj->de), "day").'</td>';
+							// Opp amount
+							print '<td class="right">';
+							if ($obj->opp_status_code) {
+								print '<span class="amount">'.price($obj->opp_amount, 1, '', 1, -1, -1, '').'</span>';
+							}
+							print '</td>';
+							// Opp status
+							print '<td class="center">';
+							if ($obj->opp_status_code) {
+								print $langs->trans("OppStatus".$obj->opp_status_code);
+							}
+							print '</td>';
+							// Opp percent
+							print '<td class="right">';
+							if ($obj->opp_percent) {
+								print price($obj->opp_percent, 1, '', 1, 0).'%';
+							}
+							print '</td>';
+							// Status
+							print '<td class="right">'.$projecttmp->getLibStatut(5).'</td>';
+
+							print '</tr>';
+						}
+						$i++;
+					}
+				} else {
+					print '<tr class="oddeven"><td colspan="8"><span class="opacitymedium">'.$langs->trans("None").'</span></td></tr>';
+				}
+				$db->free($result);
+			} else {
+				dol_print_error($db);
+			}
+		}
+
+		$parameters = array('sql' => $sql, 'function' => 'show_projects');
+		$reshook = $hookmanager->executeHooks('printFieldListFooter', $parameters, $object, $action); // Note that $action and $object may have been modified by hook
+		print $hookmanager->resPrint;
+
+		print "</table>";
+		print '</div>';
+
+		print "<br>\n";
+	}
+
+	return $i;
+}
+
+/**
+ * 		Show html area for list of projects
+ *
+ *		@param	Conf		$conf			Object conf
+ * 		@param	Translate	$langs			Object langs
+ * 		@param	DoliDB		$db				Database handler
+ * 		@param	Object		$object			Third party object
+ *      @param  string		$backtopage		Url to go once contact is created
+ *      @param  int         $nocreatelink   1=Hide create project link
+ *      @param	string		$morehtmlright	More html on right of title
+ *      @return	int
+ */
+function kjr_show_affaires($conf, $langs, $db, $object, $backtopage = '', $nocreatelink = 0, $morehtmlright = '')
+{
+	global $user, $action, $hookmanager, $form, $massactionbutton, $massaction, $arrayofselected, $arrayofmassactions;
+
+	$i = -1;
+
+	if (isModEnabled('project') && $user->hasRight('projet', 'lire')) {
+		$langs->load("projects");
+
+		$newcardbutton = '';
+		if (isModEnabled('project') && $user->hasRight('projet', 'creer') && empty($nocreatelink)) {
+			$newcardbutton .= dolGetButtonTitle($langs->trans('Nouvelle Affaire'), '', 'fa fa-plus-circle', DOL_URL_ROOT.'/projet/card.php?socid='.$object->id.'&amp;action=create&amp;backtopage='.urlencode($backtopage));
+		}
+
+		print "\n";
+		print load_fiche_titre($langs->trans("Affaires dédiées à ce tiers"), $newcardbutton.$morehtmlright, '');
+
+		print '<div class="div-table-responsive">'."\n";
+		print '<table class="noborder centpercent">';
+
+		$sql  = "SELECT p.rowid as id, p.entity, p.title, p.ref, p.public, p.dateo as do, p.datee as de, p.fk_statut as status, p.fk_opp_status, p.opp_amount, p.opp_percent, p.tms as date_modification, p.budget_amount";
+		$sql .= ", cls.code as opp_status_code";
+		$sql .= " FROM ".MAIN_DB_PREFIX."projet as p";
+		$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."c_lead_status as cls on p.fk_opp_status = cls.rowid";
+		$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."projet_extrafields as pe on p.rowid = pe.fk_object";
+		$sql .= " WHERE p.fk_soc = ".((int) $object->id);
+		$sql .= " AND p.entity IN (".getEntity('project').")";
+		$sql .= " AND pe.affaire = 1";
+		$sql .= " ORDER BY p.dateo DESC";
+
+		$result = $db->query($sql);
+		if ($result) {
+			$num = $db->num_rows($result);
+
+			print '<tr class="liste_titre">';
+			if (getDolGlobalString('MAIN_CHECKBOX_LEFT_COLUMN')) {
+				print '<td class="center">';
+				$selectedfields = (is_array($arrayofmassactions) && count($arrayofmassactions) ? $form->showCheckAddButtons('checkforselect', 1) : '');
+				print $selectedfields;
+				print '</td>';
+			}
+			print '<td>'.$langs->trans("Ref").'</td>';
+			print '<td>'.$langs->trans("Name").'</td>';
+			print '<td class="right">'.$langs->trans("Status").'</td>';
+			if (!getDolGlobalString('MAIN_CHECKBOX_LEFT_COLUMN')) {
+				print '<td class="center">';
+				$selectedfields = (is_array($arrayofmassactions) && count($arrayofmassactions) ? $form->showCheckAddButtons('checkforselect', 1) : '');
+				print $selectedfields;
+				print '</td>';
+			}
+			print '</tr>';
+
+			if ($num > 0) {
+				require_once DOL_DOCUMENT_ROOT.'/projet/class/project.class.php';
+
+				$projecttmp = new Project($db);
+
+				$i = 0;
+
+				while ($i < $num) {
+					$obj = $db->fetch_object($result);
+					$projecttmp->fetch($obj->id);
+
+					// To verify role of users
+					$userAccess = $projecttmp->restrictedProjectArea($user);
+
+					if ($user->hasRight('projet', 'lire') && $userAccess > 0) {
+						print '<tr class="oddeven">';
+
+						if (getDolGlobalString('MAIN_CHECKBOX_LEFT_COLUMN')) {
+							print '<td class="nowrap center actioncolumn">';
+							if ($massactionbutton || $massaction) {
+								$selected = 0;
+								if (in_array($obj->id, $arrayofselected)) {
+									$selected = 1;
+								}
+								print '<input id="cb'.$obj->id.'" class="flat checkforselect" type="checkbox" name="toselect[]" value="'.$obj->id.'"'.($selected ? ' checked="checked"' : '').'>';
+							}
+							print '</td>';
+						}
+						// Ref
+						print '<td class="nowraponall">';
+						print $projecttmp->getNomUrl(1, '', 0, '', '-', 0, 1, '', 'project:'.$_SERVER["PHP_SELF"].'?socid=__SOCID__');
+						print '</td>';
+
+						// Label
+						print '<td class="tdoverflowmax200" title="'.dol_escape_htmltag($obj->title).'">'.dol_escape_htmltag($obj->title).'</td>';
+						// Status
+						print '<td class="right">'.$projecttmp->getLibStatut(5).'</td>';
+
+						// Action column
+						if (!getDolGlobalString('MAIN_CHECKBOX_LEFT_COLUMN')) {
+							print '<td class="nowrap center actioncolumn">';
+							if ($massactionbutton || $massaction) {
+								$selected = 0;
+								if (in_array($obj->id, $arrayofselected)) {
+									$selected = 1;
+								}
+								print '<input id="cb'.$obj->id.'" class="flat checkforselect" type="checkbox" name="toselect[]" value="'.$obj->id.'"'.($selected ? ' checked="checked"' : '').'>';
+							}
+							print '</td>';
+						}
+						print '</tr>';
+					}
+					$i++;
+				}
+			} else {
+				print '<tr class="oddeven"><td colspan="9"><span class="opacitymedium">'.$langs->trans("None").'</span></td></tr>';
+			}
+			$db->free($result);
+		} else {
+			dol_print_error($db);
+		}
+
+		//projects linked to that thirdpart because of a people of that company is linked to a project
+		if (getDolGlobalString('PROJECT_DISPLAY_LINKED_BY_CONTACT')) {
+			print "\n";
+			print load_fiche_titre($langs->trans("ProjectsLinkedToThisThirdParty"), '', '');
+
+
+			print '<div class="div-table-responsive">'."\n";
+			print '<table class="noborder centpercent">';
+
+			$sql  = "SELECT p.rowid as id, p.entity, p.title, p.ref, p.public, p.dateo as do, p.datee as de, p.fk_statut as status, p.fk_opp_status, p.opp_amount, p.opp_percent, p.tms as date_update, p.budget_amount";
+			$sql .= ", cls.code as opp_status_code";
+			$sql .= " FROM ".MAIN_DB_PREFIX."projet as p";
+			$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."c_lead_status as cls on p.fk_opp_status = cls.rowid";
+			$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."element_contact as ec on p.rowid = ec.element_id";
+			$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."socpeople as sc on ec.fk_socpeople = sc.rowid";
+			$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."c_type_contact as tc on ec.fk_c_type_contact = tc.rowid";
+			$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."projet_extrafields as pe on p.rowid = pe.fk_object";
+			$sql .= " AND pe.affaire = 1";
+			$sql .= " WHERE sc.fk_soc = ".((int) $object->id);
+			$sql .= " AND p.entity IN (".getEntity('project').")";
+			$sql .= " AND tc.element = 'project' AND tc.source = 'external'";
+			$sql .= " ORDER BY p.dateo DESC";
+
+			$result = $db->query($sql);
+			if ($result) {
+				$num = $db->num_rows($result);
+
+				print '<tr class="liste_titre">';
+				print '<td>'.$langs->trans("Ref").'</td>';
+				print '<td>'.$langs->trans("Name").'</td>';
+				print '<td class="center">'.$langs->trans("DateStart").'</td>';
+				print '<td class="center">'.$langs->trans("DateEnd").'</td>';
+				print '<td class="right">'.$langs->trans("OpportunityAmountShort").'</td>';
+				print '<td class="center">'.$langs->trans("OpportunityStatusShort").'</td>';
+				print '<td class="right">'.$langs->trans("OpportunityProbabilityShort").'</td>';
+				print '<td class="right">'.$langs->trans("Status").'</td>';
+				print '</tr>';
+
+				if ($num > 0) {
+					require_once DOL_DOCUMENT_ROOT.'/projet/class/project.class.php';
+
+					$projecttmp = new Project($db);
+
+					$i = 0;
+
+					while ($i < $num) {
+						$obj = $db->fetch_object($result);
+						$projecttmp->fetch($obj->id);
+
+						// To verify role of users
+						$userAccess = $projecttmp->restrictedProjectArea($user);
+
+						if ($user->rights->projet->lire && $userAccess > 0) {
+							print '<tr class="oddeven">';
+
+							// Ref
+							print '<td class="nowraponall">';
+							print $projecttmp->getNomUrl(1, '', 0, '', '-', 0, 1, '', 'project:'.$_SERVER["PHP_SELF"].'?socid=__SOCID__');
+							print '</td>';
+
+							// Label
+							print '<td class="tdoverflowmax200" title="'.dol_escape_htmltag($obj->title).'">'.dol_escape_htmltag($obj->title).'</td>';
+							// Date start
+							print '<td class="center">'.dol_print_date($db->jdate($obj->do), "day").'</td>';
+							// Date end
+							print '<td class="center">'.dol_print_date($db->jdate($obj->de), "day").'</td>';
+							// Opp amount
+							print '<td class="right">';
+							if ($obj->opp_status_code) {
+								print '<span class="amount">'.price($obj->opp_amount, 1, '', 1, -1, -1, '').'</span>';
+							}
+							print '</td>';
+							// Opp status
+							print '<td class="center">';
+							if ($obj->opp_status_code) {
+								print $langs->trans("OppStatus".$obj->opp_status_code);
+							}
+							print '</td>';
+							// Opp percent
+							print '<td class="right">';
+							if ($obj->opp_percent) {
+								print price($obj->opp_percent, 1, '', 1, 0).'%';
+							}
+							print '</td>';
+							// Status
+							print '<td class="right">'.$projecttmp->getLibStatut(5).'</td>';
+
+							print '</tr>';
+						}
+						$i++;
+					}
+				} else {
+					print '<tr class="oddeven"><td colspan="8"><span class="opacitymedium">'.$langs->trans("None").'</span></td></tr>';
+				}
+				$db->free($result);
+			} else {
+				dol_print_error($db);
+			}
+		}
+
+		$parameters = array('sql' => $sql, 'function' => 'show_projects');
+		$reshook = $hookmanager->executeHooks('printFieldListFooter', $parameters, $object, $action); // Note that $action and $object may have been modified by hook
+		print $hookmanager->resPrint;
+
+		print "</table>";
+		print '</div>';
+
+		print "<br>\n";
+	}
+
+	return $i;
+}
+

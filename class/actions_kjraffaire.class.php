@@ -106,7 +106,7 @@ class ActionsKjraffaire extends CommonHookActions
 
 		$error = 0; // Error counter
 
-        // Il ne faut pas pouvoir les extrafields des affaires dans les listes de projets
+		// Il ne faut pas pouvoir les extrafields des affaires dans les listes de projets
         global $arrayfields,$contextpage;
         $extrafields_to_exclude = [
 			'ef.type_affaire',
@@ -130,10 +130,11 @@ class ActionsKjraffaire extends CommonHookActions
             }
         }
 
-		/* print_r($parameters); print_r($object); echo "action: " . $action; */
-		if (in_array($parameters['currentcontext'], array('somecontext1', 'somecontext2'))) {	    // do something only for the context 'somecontext1' or 'somecontext2'
-			// Do what you want here...
-			// You can for example load and use call global vars like $fieldstosearchall to overwrite them, or update database depending on $action and GETPOST values.
+		// On redirige l'onglet Projets de la fiche tiers pour ne pas afficher les affaires
+		if (in_array($parameters['context'], array('projectthirdparty:main'))) {
+			$url=dol_buildpath('/kjraffaire/societe/project.php',1).'?socid=3';
+			header("Location: " . $url);
+			exit();
 		}
 
 		if (!$error) {
@@ -355,11 +356,60 @@ class ActionsKjraffaire extends CommonHookActions
 	 */
 	public function completeTabsHead(&$parameters, &$object, &$action, $hookmanager)
 	{
-		global $langs, $conf, $user;
-
+		global $langs, $conf, $user, $db;
 		if (!isset($parameters['object']->element)) {
 			return 0;
 		}
+		// Si fiche société recalcul du nombre de projets du tiers
+		if ($parameters['object']->element=='societe') {
+			$counter = count($parameters['head'])-1;
+			$i=0;
+			while ($i<$counter){
+				if ($parameters['head'][$i][2]=='project'){
+					$nbProjets=0;
+					$sql = "SELECT COUNT(n.rowid) as nb";
+					$sql .= " FROM ".MAIN_DB_PREFIX."projet as n";
+					$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."projet_extrafields as e ON e.fk_object=n.rowid";
+					$sql .= " WHERE fk_soc = ".((int) $object->id);
+					$sql .= " AND (ISNULL(e.affaire) OR e.affaire = 0)";
+					$sql .= " AND entity IN (".getEntity('project').")";
+					$resql = $db->query($sql);
+					if ($resql) {
+						$obj = $db->fetch_object($resql);
+						$nbProjets = $obj->nb;
+					} else {
+						dol_print_error($db);
+					}
+					$parameters['head'][$i][1]='Projets';
+					if ($nbProjets>0){
+						$parameters['head'][$i][1].=' <span class=badge marginleftonlyshort">'.$nbProjets.'</span>';
+					}
+				}
+				if ($parameters['head'][$i][2]=='affaires'){
+					$nbProjets=0;
+					$sql = "SELECT COUNT(n.rowid) as nb";
+					$sql .= " FROM ".MAIN_DB_PREFIX."projet as n";
+					$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."projet_extrafields as e ON e.fk_object=n.rowid";
+					$sql .= " WHERE fk_soc = ".((int) $object->id);
+					$sql .= " AND e.affaire = 1";
+					$sql .= " AND entity IN (".getEntity('project').")";
+					$resql = $db->query($sql);
+					if ($resql) {
+						$obj = $db->fetch_object($resql);
+						$nbProjets = $obj->nb;
+					} else {
+						dol_print_error($db);
+					}
+					$parameters['head'][$i][1]='Affaires';
+					if ($nbProjets>0){
+						$parameters['head'][$i][1].=' <span class=badge marginleftonlyshort">'.$nbProjets.'</span>';
+					}
+				}
+				$i++;
+			}
+		}
+		
+
 		if ($parameters['mode'] == 'remove') {
 			// used to make some tabs removed
 			return 0;
