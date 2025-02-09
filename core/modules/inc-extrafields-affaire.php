@@ -49,6 +49,29 @@ $result = $extrafields->addExtraField(
     1
 );
 
+// contentieux O/N
+$result=$extrafields->addExtraField(
+    'contentieux', 
+    "Contentieux", 
+    'boolean', 
+    101,  
+    0, 
+    'projet',
+    0, 
+    0, 
+    '', 
+    array('options'=>array(1=>1)), 
+    1, 
+    '', 
+    '($object->array_options[\'options_affaire\']==1)?1:0',
+    0, 
+    '', 
+    '', 
+    'kjraffaire@kjraffaire', 
+    'isModEnabled("kjraffaire")'
+);
+
+
 // juridiction fk_kjraffaire_dico_juridiction (lien vers table dictionnaire)
 if (!isset($existingFields['fk_kjraffaire_dico_juridiction'])) {
     $res = $extrafields->addExtraField( 'fk_kjraffaire_dico_juridiction','Juridiction','sellist',102,'','projet', 0, 0, '', array('options' => array('kjraffaire_dico_juridiction:nom_etablissement:rowid::(active:=:1)' => null)), 1, '','($object->array_options[\'options_instance\']==1)?1:0' );
