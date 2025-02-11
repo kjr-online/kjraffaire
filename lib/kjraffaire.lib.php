@@ -938,3 +938,112 @@ function kjr_show_affaires($conf, $langs, $db, $object, $backtopage = '', $nocre
 	return $i;
 }
 
+/**
+ * 		Show html area for list of projects
+ *
+ *		@param	Conf		$conf			Object conf
+ * 		@param	Translate	$langs			Object langs
+ * 		@param	DoliDB		$db				Database handler
+ * 		@param	Object		$object			Third party object
+ *      @param  string		$backtopage		Url to go once contact is created
+ *      @param  int         $nocreatelink   1=Hide create project link
+ *      @param	string		$morehtmlright	More html on right of title
+ *      @return	int
+ */
+function kjr_show_contacts_affaires($conf, $langs, $db, $object, $backtopage = '', $nocreatelink = 0, $morehtmlright = '')
+{
+	global $user;
+
+	$i = -1;
+
+	if (isModEnabled('project') && $user->hasRight('projet', 'lire')) {
+		$langs->load("projects");
+
+		$newcardbutton = '';
+		if (isModEnabled('project') && $user->hasRight('projet', 'creer') && empty($nocreatelink)) {
+			$newcardbutton .= dolGetButtonTitle($langs->trans('AddProject'), '', 'fa fa-plus-circle', DOL_URL_ROOT.'/projet/card.php?socid='.$object->id.'&amp;action=create&amp;backtopage='.urlencode($backtopage));
+		}
+
+		print "\n";
+		print load_fiche_titre($langs->trans("Affaires ayant ce contact"), $newcardbutton.$morehtmlright, '');
+		print '<div class="div-table-responsive">';
+		print "\n".'<table class="noborder" width=100%>';
+
+		$sql  = 'SELECT p.rowid as id, p.entity, p.title, p.ref, p.public, p.dateo as do, p.datee as de, p.fk_statut as status, p.fk_opp_status, p.opp_amount, p.opp_percent, p.tms as date_modification, p.budget_amount';
+		$sql .= ', cls.code as opp_status_code, ctc.libelle as type_label';
+		$sql .= ' FROM '.MAIN_DB_PREFIX.'projet as p';
+		$sql .= ' LEFT JOIN '.MAIN_DB_PREFIX.'c_lead_status as cls on p.fk_opp_status = cls.rowid';
+		$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."projet_extrafields as pe on p.rowid = pe.fk_object";
+		$sql .= ' INNER JOIN '.MAIN_DB_PREFIX.'element_contact as cc ON (p.rowid = cc.element_id)';
+		$sql .= ' INNER JOIN '.MAIN_DB_PREFIX.'c_type_contact as ctc ON (ctc.rowid = cc.fk_c_type_contact)';
+		$sql .= " WHERE cc.fk_socpeople = ".((int) $object->id);
+		$sql .= " AND p.entity IN (".getEntity('project').")";
+		$sql .= " AND pe.affaire = 1";
+		$sql .= " ORDER BY p.dateo DESC";
+		$result = $db->query($sql);
+		if ($result) {
+			$num = $db->num_rows($result);
+
+			print '<tr class="liste_titre">';
+			print '<td>'.$langs->trans("Ref").'</td>';
+			print '<td>'.$langs->trans("Name").'</td>';
+			print '<td>'.$langs->trans("ContactType").'</td>';
+			print '<td class="right">'.$langs->trans("Status").'</td>';
+			print '</tr>';
+
+			if ($num > 0) {
+				require_once DOL_DOCUMENT_ROOT.'/projet/class/project.class.php';
+
+				$projecttmp = new Project($db);
+
+				$i = 0;
+
+				while ($i < $num) {
+					$obj = $db->fetch_object($result);
+					$projecttmp->fetch($obj->id);
+
+					// To verify role of users
+					$userAccess = $projecttmp->restrictedProjectArea($user);
+
+					if ($user->hasRight('projet', 'lire') && $userAccess > 0) {
+						print '<tr class="oddeven">';
+
+						// Ref
+						print '<td>';
+						$iconStyle = $object->public == 1 
+						? 'color: #986C6A;'
+						: ($object->public == 0 
+							? 'color: #6C6AA8;'
+							: 'color: #6CA89C;');
+		
+						$url = dol_buildpath('/custom/kjraffaire/affaire/card.php', 1) . '?id=' . $obj->id . '&save_lastsearch_values=1';
+		
+						print '<i class="fas fa-briefcase paddingrightonly valignmiddle" style="'.$iconStyle.'"></i>';
+						print '<a href="'.$url.'">'.htmlspecialchars($obj->ref).'</a>';
+						print '</td>';
+
+						// Label
+						print '<td>'.dol_escape_htmltag($obj->title).'</td>';
+						print '<td>'.dol_escape_htmltag($obj->type_label).'</td>';
+						// Status
+						print '<td class="right">'.$projecttmp->getLibStatut(5).'</td>';
+
+						print '</tr>';
+					}
+					$i++;
+				}
+			} else {
+				print '<tr class="oddeven"><td colspan="8"><span class="opacitymedium">'.$langs->trans("None").'</span></td></tr>';
+			}
+			$db->free($result);
+		} else {
+			dol_print_error($db);
+		}
+		print "</table>";
+		print '</div>';
+
+		print "<br>\n";
+	}
+
+	return $i;
+}

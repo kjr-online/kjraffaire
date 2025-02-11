@@ -186,7 +186,12 @@ class modKjraffaire extends DolibarrModules
 		// Array to add new pages in new tabs
 		/* BEGIN MODULEBUILDER TABS */
 		$this->tabs = array();
-		$this->tabs= array('thirdparty:+affaires:Affaires:@kjraffaire:1:/custom/kjraffaire/societe/affaire.php?socid=__ID__');
+		$this->tabs[]= array(
+			'data'=>'thirdparty:+affairesSociete:Affaires:@kjraffaire:1:/custom/kjraffaire/societe/affaire.php?socid=__ID__'
+		);
+		$this->tabs[]= array(
+			'data'=>'contact:+affairesContact:Affaires:@kjraffaire:1:/custom/kjraffaire/contact/affaire.php?id=__ID__'
+		);
 		/* END MODULEBUILDER TABS */
 		// Example:
 		// To add a new tab identified by code tabname1

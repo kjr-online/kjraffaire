@@ -129,7 +129,7 @@ if ($socid) {
 
 	$head = societe_prepare_head($object);
 
-	print dol_get_fiche_head($head, 'affaires', $langs->trans("ThirdParty"), -1, 'company');
+	print dol_get_fiche_head($head, 'affairesSociete', $langs->trans("ThirdParty"), -1, 'company');
 
 	$linkback = '<a href="'.DOL_URL_ROOT.'/societe/list.php?restore_lastsearch_values=1">'.$langs->trans("BackToList").'</a>';
 

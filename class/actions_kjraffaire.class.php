@@ -132,7 +132,13 @@ class ActionsKjraffaire extends CommonHookActions
 
 		// On redirige l'onglet Projets de la fiche tiers pour ne pas afficher les affaires
 		if (in_array($parameters['context'], array('projectthirdparty:main'))) {
-			$url=dol_buildpath('/kjraffaire/societe/project.php',1).'?socid=3';
+			$url=dol_buildpath('/kjraffaire/societe/project.php',1).'?socid='. GETPOSTINT('socid');
+			header("Location: " . $url);
+			exit();
+		}
+		// On redirige l'onglet Projets de la fiche contact pour ne pas afficher les affaires
+		if (in_array($parameters['context'], array('projectcontact:main'))) {
+			$url=dol_buildpath('/kjraffaire/contact/project.php',1).'?id='. GETPOSTINT('id');
 			header("Location: " . $url);
 			exit();
 		}
@@ -385,7 +391,7 @@ class ActionsKjraffaire extends CommonHookActions
 						$parameters['head'][$i][1].=' <span class=badge marginleftonlyshort">'.$nbProjets.'</span>';
 					}
 				}
-				if ($parameters['head'][$i][2]=='affaires'){
+				if ($parameters['head'][$i][2]=='affairesSociete'){
 					$nbProjets=0;
 					$sql = "SELECT COUNT(n.rowid) as nb";
 					$sql .= " FROM ".MAIN_DB_PREFIX."projet as n";
@@ -403,6 +409,60 @@ class ActionsKjraffaire extends CommonHookActions
 					$parameters['head'][$i][1]='Affaires';
 					if ($nbProjets>0){
 						$parameters['head'][$i][1].=' <span class=badge marginleftonlyshort">'.$nbProjets.'</span>';
+					}
+				}
+				$i++;
+			}
+		}
+
+		// Si fiche contact recalcul du nombre de projets du contact
+		if ($parameters['object']->element=='contact') {
+			$counter = count($parameters['head'])-1;
+			$i=0;
+			while ($i<$counter){
+				if ($parameters['head'][$i][2]=='project'){
+
+					$nbProjets=0;
+					$sql = "SELECT COUNT(ec.rowid) as nbProjets
+					FROM ".MAIN_DB_PREFIX."element_contact ec
+					INNER JOIN ".MAIN_DB_PREFIX."c_type_contact tc ON ec.fk_c_type_contact = tc.rowid
+					WHERE ec.fk_socpeople = ".$db->escape($object->id)."
+				  	AND tc.element = 'kjraffaire'";
+					$resql = $db->query($sql);
+					
+					if ($resql) {
+						$obj = $db->fetch_object($resql);
+						if ($obj) {
+							$nbProjets = $obj->nbProjets;
+						}
+					} else {
+						dol_syslog("Error SQL pendant count projets: ".$db->lasterror(), LOG_ERR);
+					}		
+					$parameters['head'][$i][1]='Projets';
+					if ($nbProjets>0){
+						$parameters['head'][$i][1].=' <span class=badge marginleftonlyshort">'.$nbProjets.'</span>';
+					}
+				}
+				if ($parameters['head'][$i][2]=='affairesContact'){
+					$nbAffaires=0;
+					$sql = "SELECT COUNT(ec.rowid) as nbAffaires
+					FROM ".MAIN_DB_PREFIX."element_contact ec
+					INNER JOIN ".MAIN_DB_PREFIX."c_type_contact tc ON ec.fk_c_type_contact = tc.rowid
+					WHERE ec.fk_socpeople = ".$db->escape($object->id)."
+				  	AND tc.element = 'project'";
+					$resql = $db->query($sql);
+					
+					if ($resql) {
+						$obj = $db->fetch_object($resql);
+						if ($obj) {
+							$nbAffaires = $obj->nbAffaires;
+						}
+					} else {
+						dol_syslog("Error SQL pendant count affaires: ".$db->lasterror(), LOG_ERR);
+					}		
+					$parameters['head'][$i][1]='Affaires';
+					if ($nbProjets>0){
+						$parameters['head'][$i][1].=' <span class=badge marginleftonlyshort">'.$nbAffaires.'</span>';
 					}
 				}
 				$i++;
