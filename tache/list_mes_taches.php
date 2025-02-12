@@ -110,7 +110,7 @@ $contextpage = GETPOST('contextpage', 'aZ') ? GETPOST('contextpage', 'aZ') : 'ta
 
 // Initialize technical object to manage hooks of page. Note that conf->hooks_modules contains array of hook context
 $object = new Task($db);
-$hookmanager->initHooks(array('tasklist'));
+$hookmanager->initHooks(array('kjr_tasklist_mon_travail'));
 $extrafields = new ExtraFields($db);
 
 // fetch optionals attributes and labels
@@ -279,7 +279,7 @@ $tuser = new User($db);
 
 $now = dol_now();
 
-$title = $langs->trans("Activities");
+$title = $langs->trans("Mes tâches");
 $help_url = "EN:Module_Projects|FR:Module_Projets|ES:M&oacute;dulo_Proyectos";
 $morejs = array();
 $morecss = array();
@@ -342,6 +342,7 @@ if (count($listoftaskcontacttype) == 0) {
 
 // Build and execute select
 // --------------------------------------------------------------------
+
 $distinct = 'DISTINCT'; // We add distinct until we are added a protection to be sure a contact of a project and task is assigned only once.
 $sql = "SELECT ".$distinct." p.rowid as projectid, p.ref as projectref, p.title as projecttitle, p.fk_statut as projectstatus, p.datee as projectdatee, p.fk_opp_status, p.public, p.fk_user_creat as projectusercreate, p.usage_bill_time,";
 $sql .= " s.nom as name, s.name_alias as alias, s.rowid as socid,";
@@ -367,6 +368,7 @@ $sql = preg_replace('/,\s*$/', '', $sql);
 $sqlfields = $sql; // $sql fields to remove for count total
 
 $sql .= " FROM ".MAIN_DB_PREFIX."projet as p";
+$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."projet_extrafields as ep ON p.rowid=ep.fk_object";
 $sql .= " LEFT JOIN ".MAIN_DB_PREFIX."societe as s on p.fk_soc = s.rowid";
 $sql .= ", ".MAIN_DB_PREFIX."projet_task as t";
 if (!empty($arrayfields['t.tobill']['checked']) || !empty($arrayfields['t.billed']['checked'])) {
@@ -381,8 +383,11 @@ if ($search_project_user > 0) {
 if ($search_task_user > 0) {
 	$sql .= ", ".MAIN_DB_PREFIX."element_contact as ect";
 }
+
 $sql .= " WHERE t.fk_projet = p.rowid";
 $sql .= " AND p.entity IN (".getEntity('project').')';
+$sql .= " AND t.fk_user_creat = " . $user->id;
+$sql .= " AND ep.affaire = 1";
 if (!$user->hasRight('projet', 'all', 'lire')) {
 	$sql .= " AND p.rowid IN (".$db->sanitize($projectsListId ? $projectsListId : '0').")"; // public and assigned to projects, or restricted to company for external users
 }
@@ -748,16 +753,7 @@ $newcardbutton .= dolGetButtonTitle($langs->trans('NewTask'), '', 'fa fa-plus-ci
 
 
 // Show description of content
-$texthelp = '';
-if ($search_task_user == $user->id) {
-	$texthelp .= $langs->trans("MyTasksDesc");
-} else {
-	if ($user->hasRight('projet', 'all', 'lire') && !$socid) {
-		$texthelp .= $langs->trans("TasksOnProjectsDesc");
-	} else {
-		$texthelp .= $langs->trans("TasksOnProjectsPublicDesc");
-	}
-}
+$texthelp = 'Cette liste contient les tâches que vous avez créées';
 
 print_barre_liste($form->textwithpicto($title, $texthelp), $page, $_SERVER["PHP_SELF"], $param, $sortfield, $sortorder, $massactionbutton, $num, $nbtotalofrecords, 'projecttask', 0, $newcardbutton, '', $limit, 0, 0, 1);
 
@@ -780,7 +776,7 @@ if ($search_all) {
 $moreforfilter = '';
 
 // Filter on categories
-if (isModEnabled('category') && $user->hasRight('categorie', 'lire')) {
+if (1==0 && isModEnabled('category') && $user->hasRight('categorie', 'lire')) {
 	require_once DOL_DOCUMENT_ROOT.'/categories/class/categorie.class.php';
 	$moreforfilter .= '<div class="divsearchfield">';
 	$tmptitle = $langs->trans('ProjectCategories');
@@ -789,27 +785,31 @@ if (isModEnabled('category') && $user->hasRight('categorie', 'lire')) {
 }
 
 // If the user can view users
-$moreforfilter .= '<div class="divsearchfield">';
-$tmptitle = $langs->trans('ProjectsWithThisUserAsContact');
-$includeonly = '';
-if (!$user->hasRight('user', 'user', 'lire')) {
-	$includeonly = array($user->id);
+if (1==0) {
+	$moreforfilter .= '<div class="divsearchfield">';
+	$tmptitle = $langs->trans('ProjectsWithThisUserAsContact');
+	$includeonly = '';
+	if (!$user->hasRight('user', 'user', 'lire')) {
+		$includeonly = array($user->id);
+	}
+	$moreforfilter .= img_picto($tmptitle, 'user', 'class="pictofixedwidth"').$form->select_dolusers($search_project_user ? $search_project_user : '', 'search_project_user', $tmptitle, '', 0, $includeonly, '', 0, 0, 0, '', 0, '', 'maxwidth250');
+	$moreforfilter .= '</div>';	
 }
-$moreforfilter .= img_picto($tmptitle, 'user', 'class="pictofixedwidth"').$form->select_dolusers($search_project_user ? $search_project_user : '', 'search_project_user', $tmptitle, '', 0, $includeonly, '', 0, 0, 0, '', 0, '', 'maxwidth250');
-$moreforfilter .= '</div>';
 
 // If the user can view users
-$moreforfilter .= '<div class="divsearchfield">';
-$tmptitle = $langs->trans('TasksWithThisUserAsContact');
-$includeonly = '';
-if (!$user->hasRight('user', 'user', 'lire')) {
-	$includeonly = array($user->id);
+if (1==0){
+	$moreforfilter .= '<div class="divsearchfield">';
+	$tmptitle = $langs->trans('TasksWithThisUserAsContact');
+	$includeonly = '';
+	if (!$user->hasRight('user', 'user', 'lire')) {
+		$includeonly = array($user->id);
+	}
+	$moreforfilter .= img_picto($tmptitle, 'user', 'class="pictofixedwidth"').$form->select_dolusers($search_task_user, 'search_task_user', $tmptitle, '', 0, $includeonly, '', 0, 0, 0, '', 0, '', 'maxwidth250');
+	$moreforfilter .= '</div>';	
 }
-$moreforfilter .= img_picto($tmptitle, 'user', 'class="pictofixedwidth"').$form->select_dolusers($search_task_user, 'search_task_user', $tmptitle, '', 0, $includeonly, '', 0, 0, 0, '', 0, '', 'maxwidth250');
-$moreforfilter .= '</div>';
 
 // Filter on customer categories
-if (getDolGlobalString('MAIN_SEARCH_CATEGORY_CUSTOMER_ON_TASK_LIST') && isModEnabled("category") && $user->hasRight('categorie', 'lire')) {
+if (1==0 && getDolGlobalString('MAIN_SEARCH_CATEGORY_CUSTOMER_ON_TASK_LIST') && isModEnabled("category") && $user->hasRight('categorie', 'lire')) {
 	$formcategory = new FormCategory($db);
 	$moreforfilter .= $formcategory->getFilterBox(Categorie::TYPE_CUSTOMER, $searchCategoryCustomerList, 'minwidth300', $searchCategoryCustomerList ? $searchCategoryCustomerList : 0);
 	/*
