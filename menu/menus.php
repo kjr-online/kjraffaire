@@ -107,7 +107,37 @@ $this->menu[$r++]=array(
     'titre'=>'Liste',
     'mainmenu'=>'kjraffaire',
     'leftmenu'=>'kjraffaire_list_tache',
-    'url'=>'/kjraffaire/tache/tache.php',
+    'url'=>'/kjraffaire/tache/list.php',
+    'langs'=>'kjraffaire@kjraffaire',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+    'position'=>1000+$r,
+    'enabled'=>'isModEnabled("kjraffaire")', // Define condition to show or hide menu entry. Use 'isModEnabled("kjraffaire")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+    'perms'=>'',
+    'target'=>'',
+    'user'=>0,				                // 0=Menu for internal users, 1=external users, 2=both
+);
+
+$this->menu[$r++]=array(
+    'fk_menu'=>'fk_mainmenu=kjraffaire,fk_leftmenu=kjraffaire_index_tache',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+    'type'=>'left',			                // This is a Left menu entry
+    'titre'=>'Mon travail',
+    'mainmenu'=>'kjraffaire',
+    'leftmenu'=>'kjraffaire_list_mon_travail',
+    'url'=>'/kjraffaire/tache/list_mon_travail.php',
+    'langs'=>'kjraffaire@kjraffaire',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+    'position'=>1000+$r,
+    'enabled'=>'isModEnabled("kjraffaire")', // Define condition to show or hide menu entry. Use 'isModEnabled("kjraffaire")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+    'perms'=>'',
+    'target'=>'',
+    'user'=>0,				                // 0=Menu for internal users, 1=external users, 2=both
+);
+
+$this->menu[$r++]=array(
+    'fk_menu'=>'fk_mainmenu=kjraffaire,fk_leftmenu=kjraffaire_index_tache',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+    'type'=>'left',			                // This is a Left menu entry
+    'titre'=>'Mes tâches',
+    'mainmenu'=>'kjraffaire',
+    'leftmenu'=>'kjraffaire_list_mes_taches',
+    'url'=>'/kjraffaire/tache/list_mes_taches.php',
     'langs'=>'kjraffaire@kjraffaire',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
     'position'=>1000+$r,
     'enabled'=>'isModEnabled("kjraffaire")', // Define condition to show or hide menu entry. Use 'isModEnabled("kjraffaire")' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
