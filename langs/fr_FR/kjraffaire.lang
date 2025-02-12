@@ -19,11 +19,10 @@ KjraffaireSetup = Kjraffaire setup
 Settings = Settings
 KjraffaireSetupPage = Kjraffaire setup page
 NewSection=New section
-KJRAFFAIRE_MYPARAM1 = My param 1
-KJRAFFAIRE_MYPARAM1Tooltip = My param 1 tooltip
-KJRAFFAIRE_MYPARAM2=My param 2
-KJRAFFAIRE_MYPARAM2Tooltip=My param 2 tooltip
-
+KJRAFFAIRE_TACHE_DEFAUT=Tâche par défaut d'une affaire
+KJRAFFAIRE_PARAM_TACHE=Paramètres Tâches
+KJRAFFAIRE_PARAM_GENERAUX=Paramètres Généraux
+KJRAFFAIRE_PARAM_METIER=Métier
 
 #
 # About page

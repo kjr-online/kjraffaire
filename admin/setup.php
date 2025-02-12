@@ -99,71 +99,28 @@ if (!$user->admin) {
 
 // Enter here all parameters in your setup page
 
-// Setup conf for selection of an URL
-$item = $formSetup->newItem('KJRAFFAIRE_MYPARAM1');
-$item->fieldOverride = (empty($_SERVER['HTTPS']) ? 'http://' : 'https://') . $_SERVER['HTTP_HOST'];
-$item->cssClass = 'minwidth500';
-
-// Setup conf for selection of a simple string input
-$item = $formSetup->newItem('KJRAFFAIRE_MYPARAM2');
-$item->defaultFieldValue = 'default value';
-$item->fieldAttr['placeholder'] = 'A placeholder here';
-
-// Setup conf for selection of a simple textarea input but we replace the text of field title
-$item = $formSetup->newItem('KJRAFFAIRE_MYPARAM3');
-$item->nameText = $item->getNameText().' more html text ';
-
-// Setup conf for a selection of a thirdparty
-$item = $formSetup->newItem('KJRAFFAIRE_MYPARAM4');
-$item->setAsThirdpartyType();
-
-// Setup conf for a selection of a boolean
-$formSetup->newItem('KJRAFFAIRE_MYPARAM5')->setAsYesNo();
-
-// Setup conf for a selection of an email template of type thirdparty
-$formSetup->newItem('KJRAFFAIRE_MYPARAM6')->setAsEmailTemplate('thirdparty');
-
-// Setup conf for a selection of a secured key
-//$formSetup->newItem('KJRAFFAIRE_MYPARAM7')->setAsSecureKey();
-
-// Setup conf for a selection of a product
-$formSetup->newItem('KJRAFFAIRE_MYPARAM8')->setAsProduct();
-
 // Add a title for a new section
-$formSetup->newItem('NewSection')->setAsTitle();
+$formSetup->newItem('KJRAFFAIRE_PARAM_GENERAUX')->setAsTitle();
 
 $TField = array(
-	'test01' => $langs->trans('test01'),
-	'test02' => $langs->trans('test02'),
-	'test03' => $langs->trans('test03'),
-	'test04' => $langs->trans('test04'),
-	'test05' => $langs->trans('test05'),
-	'test06' => $langs->trans('test06'),
+	'avocat' => $langs->trans('Avocat'),
+	'autre' => $langs->trans('Autre'),
 );
 
 // Setup conf for a simple combo list
-$formSetup->newItem('KJRAFFAIRE_MYPARAM9')->setAsSelect($TField);
+$formSetup->newItem('KJRAFFAIRE_PARAM_METIER')->setAsSelect($TField);
 
-// Setup conf for a multiselect combo list
-$item = $formSetup->newItem('KJRAFFAIRE_MYPARAM10');
-$item->setAsMultiSelect($TField);
-$item->helpText = $langs->transnoentities('KJRAFFAIRE_MYPARAM10');
 
-// Setup conf for a category selection
-$formSetup->newItem('KJRAFFAIRE_CATEGORY_ID_XXX')->setAsCategory('product');
+// Setup conf for a selection of a boolean
+//$formSetup->newItem('KJRAFFAIRE_MYPARAM5')->setAsYesNo();
 
-// Setup conf KJRAFFAIRE_MYPARAM10
-$item = $formSetup->newItem('KJRAFFAIRE_MYPARAM10');
-$item->setAsColor();
-$item->defaultFieldValue = '#FF0000';
-$item->nameText = $item->getNameText().' more html text ';
-$item->fieldInputOverride = '';
-$item->helpText = $langs->transnoentities('AnHelpMessage');
-//$item->fieldValue = '';
-//$item->fieldAttr = array() ; // fields attribute only for compatible fields like input text
-//$item->fieldOverride = false; // set this var to override field output will override $fieldInputOverride and $fieldOutputOverride too
-//$item->fieldInputOverride = false; // set this var to override field input
-//$item->fieldOutputOverride = false; // set this var to override field output
+
+// Add a title for a new section
+$formSetup->newItem('KJRAFFAIRE_PARAM_TACHE')->setAsTitle();
+
+$item = $formSetup->newItem('KJRAFFAIRE_TACHE_DEFAUT');
+$item->defaultFieldValue = "Travail sur l'affaire";
+$item->fieldAttr['placeholder'] = 'Affaire : tâche par defaut';
 
 
 $setupnotempty += count($formSetup->items);
