@@ -278,38 +278,41 @@ class InterfaceKjraffaireTriggers extends DolibarrTriggers
 			case 'PROJECT_CREATE':
 				// Création tâche par défaut si définie dans les paramètres du module
 				global $db;
-				//if ($object->array_options['options_affaire']==1)
 				dol_include_once('/projet/class/task.class.php');
-				if (!empty($conf->global->KJRAFFAIRE_TACHE_DEFAUT)){
-					$task=new Task($db);
-					$task->fk_project=$object->id;
-					$task->ref='';
-					$task->label = $conf->global->KJRAFFAIRE_TACHE_DEFAUT;
-					$task->date_c=dol_now();
-					$task->planned_workload=3600; //1 heure en secondes
-					$task->progress=0;
-					$task->fk_user_creat=$user->id;
-
-					// Initialisation de l'état de la tâche à "Saisie"
-					$task->array_options['etat']='Saisie';
-
-					// Gestion de la numérotation automatique de la tâche
-					if (!empty($conf->global->PROJECT_TASK_ADDON)) {
-						$task_ref_module = dol_buildpath('/core/modules/project/task/' . $conf->global->PROJECT_TASK_ADDON . '.php', 0);
-						
-						if (file_exists($task_ref_module)) {
-							require_once $task_ref_module;
-				
-							$classname = $conf->global->PROJECT_TASK_ADDON;
-							if (class_exists($classname)) {
-								$numModel = new $classname($db);
-								$task->ref = $numModel->getNextValue($project_id, $task); // Génère la référence selon le module configuré
+				if ($object->array_options['options_affaire']==1){
+					if (!empty($conf->global->KJRAFFAIRE_TACHE_DEFAUT)){
+						$task=new Task($db);
+						$task->fk_project=$object->id;
+						$task->ref='';
+						$task->label = $conf->global->KJRAFFAIRE_TACHE_DEFAUT;
+						$task->date_c=dol_now();
+						$task->planned_workload=3600; //1 heure en secondes
+						$task->progress=0;
+						$task->fk_user_creat=$user->id;
+	
+						// Initialisation de l'état de la tâche à "Saisie"
+						$task->array_options['etat']='Saisie';
+	
+						// Gestion de la numérotation automatique de la tâche
+						if (!empty($conf->global->PROJECT_TASK_ADDON)) {
+							$task_ref_module = dol_buildpath('/core/modules/project/task/' . $conf->global->PROJECT_TASK_ADDON . '.php', 0);
+							
+							if (file_exists($task_ref_module)) {
+								require_once $task_ref_module;
+					
+								$classname = $conf->global->PROJECT_TASK_ADDON;
+								if (class_exists($classname)) {
+									$numModel = new $classname($db);
+									$task->ref = $numModel->getNextValue($project_id, $task); // Génère la référence selon le module configuré
+								}
 							}
 						}
+	
+						$result=$task->create($user);
 					}
 
-					$result=$task->create($user);
 				}
+				
 				break;
 			//case 'PROJECT_MODIFY':
 			//case 'PROJECT_DELETE':
