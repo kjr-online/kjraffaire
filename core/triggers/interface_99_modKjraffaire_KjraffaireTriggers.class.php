@@ -290,6 +290,9 @@ class InterfaceKjraffaireTriggers extends DolibarrTriggers
 					$task->progress=0;
 					$task->fk_user_creat=$user->id;
 
+					// Initialisation de l'état de la tâche à "Saisie"
+					$task->array_options['etat']='Saisie';
+
 					// Gestion de la numérotation automatique de la tâche
 					if (!empty($conf->global->PROJECT_TASK_ADDON)) {
 						$task_ref_module = dol_buildpath('/core/modules/project/task/' . $conf->global->PROJECT_TASK_ADDON . '.php', 0);

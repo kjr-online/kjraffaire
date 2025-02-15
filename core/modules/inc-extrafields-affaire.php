@@ -1,8 +1,41 @@
 <?php
 
-// Ajout des champs extras pour les affaires dans les projets
-
 include_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
+
+//========================================
+// Ajout des champs extras pour les tâches
+//========================================
+$extrafields = new ExtraFields($this->db);
+$params = array(
+    'options' => array('Saisie' => 'Saisie', 'Ouverte' => 'Ouverte','En cours' => 'En cours','Terminée' => 'Terminée','Cloturée' => 'Cloturée')
+);
+
+$result=$extrafields->addExtraField(
+    'etat', 
+    'Etat', 
+    'select', 
+    100,  
+    0, 
+    'projet_task',
+    0, 
+    0, 
+    '', 
+    $params,
+    1, 
+    '', 
+    1, 
+    0, 
+    '', 
+    '', 
+    'kjraffaire@kjraffaire', 
+    'isModEnabled("kjraffaire")'
+);
+
+
+//===========================================================
+// Ajout des champs extras pour les affaires dans les projets
+//===========================================================
+
 $extrafields = new ExtraFields($this->db);
 $result=$extrafields->addExtraField(
     'affaire', 
@@ -180,3 +213,4 @@ if (!isset($existingFields['fk_socpeople_avocat_postulant'])) {
     $res = $extrafields->addExtraField( 'fk_socpeople_avocat_postulant','Avocat postulant (contact)','sellist',113,'','projet', 0, 0, '', array('options' => array('socpeople:lastname:rowid::(statut:=:1)' => null)), 1, '','($object->array_options[\'options_instance\']==1)?1:0' );
     if ($res < 0) { dol_syslog("Erreur lors de l'ajout du champ extra fk_socpeople_avocat_postulant : " . $extrafields->error, LOG_ERR); return -1; }
 }
+
