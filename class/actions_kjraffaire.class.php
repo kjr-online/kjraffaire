@@ -130,6 +130,12 @@ class ActionsKjraffaire extends CommonHookActions
             }
         }
 
+		// Gestion du statut de la tache quand l'utilisateur affecté la consulte
+		if (in_array($parameters['context'], array('projecttaskcard:globalcard:main'))) {
+			require_once DOL_DOCUMENT_ROOT.'/custom/kjraffaire/lib/kjraffaire.lib.php';
+			MajEtatTache(GETPOSTINT('id'),'Ouverte');
+		}
+
 		// On redirige l'onglet Projets de la fiche tiers pour ne pas afficher les affaires
 		if (in_array($parameters['context'], array('projectthirdparty:main'))) {
 			$url=dol_buildpath('/kjraffaire/societe/project.php',1).'?socid='. GETPOSTINT('socid');

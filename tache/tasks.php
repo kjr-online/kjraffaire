@@ -28,6 +28,7 @@ require '../../../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/projet/class/project.class.php';
 require_once DOL_DOCUMENT_ROOT.'/projet/class/task.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/project.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/custom/kjraffaire/lib/kjraffaire.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formother.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
@@ -582,7 +583,7 @@ if ($id > 0 || !empty($ref)) {
 		$tmpurl = preg_replace('/__SOCID__/', (string) $object->socid, $tmpurl);
 		$linkback = '<a href="'.$tmpurl.(preg_match('/\?/', $tmpurl) ? '&' : '?'). 'restore_lastsearch_values=1">'.$langs->trans("BackToList").'</a>';
 	} else {
-		$linkback = '<a href="'.DOL_URL_ROOT.'/projet/list.php?restore_lastsearch_values=1">'.$langs->trans("BackToList").'</a>';
+		$linkback = '<a href="'.DOL_URL_ROOT.'/custom/kjraffaire/affaire/list.php?restore_lastsearch_values=1">'.$langs->trans("BackToList").'</a>';
 	}
 
 	$morehtmlref = '<div class="refidno">';
@@ -1098,7 +1099,7 @@ if ($action == 'create' && $user->hasRight('projet', 'creer') && (empty($object-
 		// Show all lines in taskarray (recursive function to go down on tree)
 		$j = 0;
 		$level = 0;
-		$nboftaskshown = projectLinesa($j, 0, $tasksarray, $level, true, 0, $tasksrole, $object->id, 1, $object->id, '', ($object->usage_bill_time ? 1 : 0), $arrayfields, $arrayofselected);
+		$nboftaskshown = affaireLinesa($j, 0, $tasksarray, $level, true, 0, $tasksrole, $object->id, 1, $object->id, '', ($object->usage_bill_time ? 1 : 0), $arrayfields, $arrayofselected);
 	} else {
 		$colspan = count($arrayfields);
 		if ($object->usage_bill_time) {

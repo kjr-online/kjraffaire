@@ -25,7 +25,7 @@
  *	\brief      Page of a project task
  */
 
-require "../../main.inc.php";
+require "../../../main.inc.php";
 require_once DOL_DOCUMENT_ROOT.'/projet/class/project.class.php';
 require_once DOL_DOCUMENT_ROOT.'/projet/class/task.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/project.lib.php';
@@ -35,6 +35,7 @@ require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formfile.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/modules/project/task/modules_task.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formprojet.class.php';
+require_once DOL_DOCUMENT_ROOT.'/custom/kjraffaire/lib/kjraffaire.lib.php';
 
 // Load translation files required by the page
 $langs->loadlangs(array('projects', 'companies'));
@@ -85,6 +86,17 @@ restrictedArea($user, 'projet', $object->fk_project, 'projet&project');
 /*
  * Actions
  */
+if ($action=='kjr_cloturer'){
+	var_dump($action);
+	MajEtatTache($id,'Cloturée');
+	$action='';
+}
+
+if ($action=='kjr_terminer'){
+	var_dump($action);
+	MajEtatTache($id,'Terminée');
+	$action='';
+}
 
 if ($action == 'update' && !GETPOST("cancel") && $user->hasRight('projet', 'creer')) {
 	$error = 0;
@@ -286,7 +298,7 @@ if ($id > 0 || !empty($ref)) {
 	if (!empty($withproject)) {
 		// Tabs for project
 		$tab = 'tasks';
-		$head = project_prepare_head($projectstatic);
+		$head = kjrtache_prepare_head($projectstatic);
 		print dol_get_fiche_head($head, $tab, $langs->trans("Project"), -1, ($projectstatic->public ? 'projectpub' : 'project'), 0, '', '');
 
 		$param = ($mode == 'mine' ? '&mode=mine' : '');
@@ -446,8 +458,7 @@ if ($id > 0 || !empty($ref)) {
 	//$arrayofuseridoftask=$object->getListContactId('internal');
 
 
-	$head = task_prepare_head($object);
-
+	$head = kjrtache_prepare_head($object);
 	if ($action == 'edit' && $user->hasRight('projet', 'creer')) {
 		print '<form method="POST" action="'.$_SERVER["PHP_SELF"].'">';
 		print '<input type="hidden" name="token" value="'.newToken().'">';
@@ -593,8 +604,9 @@ if ($id > 0 || !empty($ref)) {
 		// Project
 		if (empty($withproject)) {
 			$morehtmlref .= '<div class="refidno">';
-			$morehtmlref .= $langs->trans("Project").': ';
-			$morehtmlref .= $projectstatic->getNomUrl(1);
+			$morehtmlref .= $langs->trans("Affaire").': ';
+			//$morehtmlref .= $projectstatic->getNomUrl(1);
+			$morehtmlref .= '<a href="'.DOL_URL_ROOT.'/custom/kjraffaire/tache/tasks.php?id='.$projectstatic->id.'">'.$projectstatic->ref.'</a>';
 			$morehtmlref .= '<br>';
 
 			// Third party
@@ -711,6 +723,14 @@ if ($id > 0 || !empty($ref)) {
 		if (empty($reshook)) {
 			// Modify
 			if ($user->hasRight('projet', 'creer')) {
+				// On ne peut clôturer une tache qui sib on est son créateur
+				if ($user->id==$object->fk_user_creat){
+					print '<a class="butAction" href="'.$_SERVER['PHP_SELF'].'?id='.$object->id.'&action=kjr_cloturer&token='.newToken().'&withproject='.((int) $withproject).'">'.$langs->trans('Classer Clôturée').'</a>';
+				}
+				// On ne peut terminer une tache qui si on est assigné
+				if (EstAffecte($object->id)){
+					print '<a class="butAction" href="'.$_SERVER['PHP_SELF'].'?id='.$object->id.'&action=kjr_terminer&token='.newToken().'&withproject='.((int) $withproject).'">'.$langs->trans('Classer Terminée').'</a>';				
+				}
 				print '<a class="butAction" href="'.$_SERVER['PHP_SELF'].'?id='.$object->id.'&action=edit&token='.newToken().'&withproject='.((int) $withproject).'">'.$langs->trans('Modify').'</a>';
 				print '<a class="butAction" href="'.$_SERVER['PHP_SELF'].'?id='.$object->id.'&action=clone&token='.newToken().'&withproject='.((int) $withproject).'">'.$langs->trans('Clone').'</a>';
 				print '<a class="butActionDelete classfortooltip" href="'.$_SERVER['PHP_SELF'].'?id='.$object->id.'&action=merge&token='.newToken().'&withproject='.((int) $withproject).'" title="'.$langs->trans("MergeTasks").'">'.$langs->trans('Merge').'</a>';

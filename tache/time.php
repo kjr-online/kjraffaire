@@ -1106,7 +1106,7 @@ if (($id > 0 || !empty($ref)) || $projectidforalltimes > 0 || $allprojectforuser
 
 	// Show section with information of task. If id of task is not defined and project id defined, then $projectidforalltimes is not empty.
 	if (empty($projectidforalltimes) && empty($allprojectforuser)) {
-		$head = task_prepare_head($object);
+		$head = kjrtache_prepare_head($object);
 		print dol_get_fiche_head($head, 'task_time', $langs->trans("Task"), -1, 'projecttask', 0, '', 'reposition');
 
 		if ($action == 'deleteline') {

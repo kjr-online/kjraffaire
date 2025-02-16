@@ -1211,7 +1211,8 @@ while ($i < $imaxinloop) {
 			// Ref
 			if (!empty($arrayfields['t.ref']['checked'])) {
 				print '<td class="nowraponall">';
-				print $object->getNomUrl(1, 'withproject');
+				//print $object->getNomUrl(1, 'withproject');
+				print '<a href="'.DOL_URL_ROOT.'/custom/kjraffaire/tache/task.php?id='.$object->id.'&withproject=0">'.$object->ref.'</a>';
 				if ($object->hasDelay()) {
 					print img_warning("Late");
 				}
