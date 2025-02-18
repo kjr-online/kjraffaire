@@ -39,6 +39,9 @@ require_once DOL_DOCUMENT_ROOT.'/core/modules/project/modules_project.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
 require_once DOL_DOCUMENT_ROOT.'/categories/class/categorie.class.php';
 require_once DOL_DOCUMENT_ROOT.'/custom/kjraffaire/lib/kjraffaire.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/societe/class/societe.class.php';
+require_once DOL_DOCUMENT_ROOT.'/contact/class/contact.class.php';
+
 // Load translation files required by the page
 $langsLoad = array('projects', 'companies');
 if (isModEnabled('eventorganization')) {
@@ -111,85 +114,7 @@ $permissiondellink = $user->hasRight('projet', 'creer');	// Used by the include 
 
 /* Actions */
 
-// Mode édition d'un champ extrafield
-$filtered_options_js = json_encode("");
-$filtered_options_avocat = json_encode("");
-if ($action == 'edit_extrafield' && $user->rights->projet->creer) {
-    $object->array_options['options_instance'] = 1;
-    $key = GETPOST('key', 'alpha');
-    if (isset($extrafields->attributes['projet']['label'][$key])) {
-        $extrafield_edit_key = $key;
-        $champs_associers = [
-            'fk_socpeople_magistrat' => 'options_fk_soc_magistrat',
-            'fk_socpeople_avocat_postulant' => 'options_fk_soc_avocat_postulant'
-        ];
-        
-        if (array_key_exists($key, $champs_associers)) {
-            $fk_soc = $object->array_options[$champs_associers[$key]];
-            $options = [];
-
-            if (!empty($fk_soc)) {
-                $sql = "SELECT sp.rowid, sp.lastname, sp.firstname
-                        FROM ".MAIN_DB_PREFIX."socpeople sp
-                        WHERE sp.fk_soc = ".((int) $fk_soc)."
-                          AND sp.statut = 1";
-                $resql = $db->query($sql);
-
-                if ($resql) {
-                    while ($row = $db->fetch_object($resql)) {
-                        $contact_name = trim($row->firstname . ' ' . $row->lastname);
-                        $options[$row->rowid] = $contact_name;
-                    }
-                }
-            }
-
-            // Assigner options au bon champ
-            if ($key == 'fk_socpeople_magistrat') {
-                $filtered_options_js = json_encode($options);
-            } elseif ($key == 'fk_socpeople_avocat_postulant') {
-                $filtered_options_avocat = json_encode($options);
-            }
-        }
-    } else {
-        setEventMessages($langs->trans("InvalidExtraFieldKey"), null, 'errors');
-    }
-}
-
-// Mise à jour de l'extrafield après soumission du formulaire
-if ($action == 'update_extrafield' && $user->rights->projet->creer) {
-    $object->array_options['options_instance'] = 1;
-    $key = GETPOST('key', 'alpha');
-    if ($extrafields->attributes['projet']['type'][$key] == 'date') {
-        $value = GETPOST('options_'.$key.'options_','alpha');
-        if (!empty($value)) {
-            // Convertir en timestamp
-            $dateParts = explode('/', $value);
-            if (count($dateParts) === 3) {
-                $day = (int) $dateParts[0];
-                $month = (int) $dateParts[1];
-                $year = (int) $dateParts[2];
-                $value = dol_mktime(0, 0, 0, $month, $day, $year);
-            } else {
-                $value = '';
-            }
-        }
-    } else {
-        $value = GETPOST('options_'.$key.'options_', 'alpha');
-    }
-    if (isset($extrafields->attributes['projet']['label'][$key])) {
-        $object->array_options['options_'.$key] = $value; // Mettre à jour la valeur dans l'objet
-        $result = $object->update($user); // Sauvegarder
-        if ($result >= 0) {
-            setEventMessages("Valeur enregistrée avec succès", null, 'mesgs');
-        } else {
-            setEventMessages($object->error, $object->errors, 'errors');
-        }
-    } else {
-        setEventMessages($langs->trans("InvalidExtraFieldKey"), null, 'errors');
-    }
-    header('Location: '.$_SERVER['PHP_SELF'].'?id='.$object->id);
-    exit;
-}
+ob_start();
 
 /*
  *	View
@@ -284,202 +209,137 @@ if ($object->id > 0) {
 	dol_banner_tab($object, 'ref', $linkback, 1, 'ref', 'ref', $morehtmlref);
     $object->element = 'project';
 
-    // Liste des extrafields à afficher dans chaque colonne
-    $extrafields_left = ['fk_kjraffaire_dico_juridiction', 'fk_kjraffaire_dico_action_juridique', 'chambre', 'no_role', 'fk_soc_magistrat', 'fk_socpeople_magistrat'];
-    $extrafields_right = ['section', 'date_decision', 'date_signification', 'date_recours', 'fk_soc_avocat_postulant', 'fk_socpeople_avocat_postulant'];
-
-    // Liste des clés déjà utilisées et à exclure
-    $used_extrafields = array_merge($extrafields_left, $extrafields_right);
-    $excluded_extrafields = ['affaire', 'type_affaire'];
-
-    // Récupération des extrafields restants, en excluant ceux à ignorer
-    $remaining_extrafields = array_diff(
-        array_keys($extrafields->attributes['projet']['label']),
-        array_merge($used_extrafields, $excluded_extrafields)
-    );
-
     print '<hr/><br/><div class="fichecenter">';
 
-    // Colonne gauche
-    print '<div class="fichehalfleft">';
-    print '<table class="border tableforfield centpercent">';
+    print '<table class="centpercent notopnoleftnoright table-fiche-title"><tbody><tr class="titre">';
+    print '<td class="nobordernopadding valignmiddle col-title">'.$langs->trans("Instances associées").'</td>';
+    print '<td class="nobordernopadding titre_right wordbreakimp right valignmiddle col-right">';
+    print '</td></tr></tbody></table>';
 
-    // Liste des extrafields à gauche
-    foreach ($extrafields_left as $key) {
-        if (isset($extrafields->attributes['projet']['label'][$key])) {
-            $label = $langs->trans($extrafields->attributes['projet']['label'][$key]);
-            $value = $object->array_options['options_'.$key];
+    print '<div class="div-table-responsive">';
+	print '<table class="tagtable liste" style="font-size: 12px;">';
+	print '<tr class="liste_titre">';
+	print '<th style="width: 150px;">Juridiction</th><th style="width: 120px;">Action<br/>Juridique</th><th style="width: 60px;">Chambre</th><th style="width: 40px;">No Rôle</th><th style="width: 10px;">Magistrat</th><th style="width: 90px;">Section</th><th style="width: 10px;">Date Décision</th><th style="width: 10px;">Date Signification</th><th style="width: 10px;">Date Recours</th><th style="width: 8px;">Avocat Postulant</th><th style="width: 8px;"></th>';
+	print '</tr>';
 
-            print '<tr>';
-            print '<td class="titlefield">'.$label.'</td>';
-            print '<td>';
+    $sql_juridictions = "SELECT rowid, nom_etablissement FROM ".MAIN_DB_PREFIX."kjraffaire_dico_juridiction ORDER BY nom_etablissement ASC";
+	$resql_juridictions = $db->query($sql_juridictions);
+	$juridictions = [];
+	while ($obj = $db->fetch_object($resql_juridictions)) {
+		$juridictions[$obj->rowid] = $obj->nom_etablissement;
+	}
 
-            // Mode édition pour ce champ
-            if (isset($extrafield_edit_key) && $extrafield_edit_key === $key) {
-                $filtered_options = isset($extrafields->attributes['projet']['param'][$key]['filtered_options']) ? $extrafields->attributes['projet']['param'][$key]['filtered_options'] : null;
-                $filtered_options_json = json_encode($filtered_options);
-                print '<form action="'.$_SERVER['PHP_SELF'].'" method="POST">';
+    $sql_action_juridique = "SELECT rowid, label FROM ".MAIN_DB_PREFIX."kjraffaire_dico_action_juridique ORDER BY label ASC";
+	$resql_action_juridique = $db->query($sql_action_juridique);
+	$action_juridique = [];
+	while ($obj = $db->fetch_object($resql_action_juridique)) {
+		$action_juridique[$obj->rowid] = $obj->label;
+	}
+    $sql = "SELECT * FROM `".MAIN_DB_PREFIX."kjraffaire_instance` WHERE `fk_affaire`=".$object->id;
+    $resql = $db->query($sql);
+    if ($resql) {
+        while ($obj = $db->fetch_object($resql)) {
+            $edit_mode = ($_GET['action'] === 'edit_instance' && $_GET['instance_id'] == $obj->rowid);
+            print '<tr class="oddeven">';
+            if ($edit_mode) {
+                print '<form method="POST" action="'.$_SERVER["PHP_SELF"].'">';
                 print '<input type="hidden" name="token" value="'.newToken().'">';
-                print '<input type="hidden" name="action" value="update_extrafield">';
+                print '<input type="hidden" name="action" value="update_instance">';
                 print '<input type="hidden" name="id" value="'.$object->id.'">';
-                print '<input type="hidden" name="key" value="'.$key.'">';
-                print $extrafields->showInputField($key, $object->array_options['options_'.$key], '', 'options_', '', 'data-options=\''.$filtered_options_json.'\'', $object->id, $object->table_element);
-                print ' <button type="submit" class="button">'.$langs->trans("Save").'</button>';
-                print ' <a href="'.$_SERVER['PHP_SELF'].'?id='.$object->id.'" class="button">'.$langs->trans("Cancel").'</a>';
+                print '<input type="hidden" name="instance_id" value="'.$obj->rowid.'">';
+                print '<td>'.$form->selectarray("fk_juridiction_update", $juridictions, $obj->fk_juridiction, 1, '', '', 'style="width: 150px; font-size: 12px;"').'</td>';
+                print '<td>'.$form->selectarray("fk_action_juridique_update", $action_juridique, $obj->fk_action_juridique, 1, '', '', 'style="width: 120px; font-size: 12px;"').'</td>';
+                print '<td><input type="text" name="chambre" value="'.$obj->chambre.'" style="width: 60px;"></td>';
+                print '<td><input type="text" name="no_role" value="'.$obj->no_role.'" style="width: 40px;"></td>';
+                print '<td>'.$form->select_contact('', $obj->fk_soc_avocat_postulant, "fk_socpeople_magistrat_update", 1, '', 1, '', 0, '', 1, '', '', 'style="width: 120px; font-size: 12px;"', '', 1).'</td>';
+                print '<td><input type="text" name="section" value="'.$obj->section.'" style="width: 90px;"></td>';
+                print '<td><input type="date" name="date_decision" value="'.$obj->date_decision.'" style="width: 80px;"></td>';
+                print '<td><input type="date" name="date_signification" value="'.$obj->date_signification.'" style="width: 80px;"></td>';
+                print '<td><input type="date" name="date_recours" value="'.$obj->date_recours.'" style="width: 80px;"></td>';
+                print '<td>'.$form->select_contact('', $obj->fk_soc_avocat_postulant, 'fk_soc_avocat_postulant_update', 1, '', 1, '', 0, '', 1, '', '', 'style="width: 120px; font-size: 12px;"', '', 1).'</td>';
+                print '<td class="right">';
+                print '<button type="submit" class="button">Enregistrer</button>';
+                print ' <a href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'" class="button">Annuler</a>';
+                print '</td>';
                 print '</form>';
             } else {
-                // Affichage en mode lecture
-                if ($extrafields->attributes['projet']['type'][$key] === 'date' && !empty($value)) {
-                    print dol_print_date($value, 'day');
-                } elseif ($extrafields->attributes['projet']['type'][$key] === 'sellist' && !empty($value)) {
-                    $options = $extrafields->attributes['projet']['param'][$key]['options'];
-                    if (!empty($options)) {
-                        $option_parts = explode(':', key($options));
-                        if (count($option_parts) >= 3) {
-                            $table = $option_parts[0];
-                            $field_label = $option_parts[1];
-                            $field_id = $option_parts[2];
-                            $sql = "SELECT ".$db->escape($field_label)." as label FROM ".MAIN_DB_PREFIX.$table." WHERE ".$db->escape($field_id)." = ".((int) $value);
-                            $resql = $db->query($sql);
-                            if ($resql) {
-                                $obj = $db->fetch_object($resql);
-                                if ($obj) {
-                                    print $langs->trans($obj->label);
-                                } else {
-                                    print $langs->trans("Unknown"); // Affiche une erreur si aucun libellé trouvé
-                                }
-                            } else {
-                                print $langs->trans("Error");
-                            }
+                print '<td>'.($juridictions[$obj->fk_juridiction] ?? '').'</td>';
+                print '<td>'.($action_juridique[$obj->fk_action_juridique] ?? '').'</td>';
+                print '<td>'.$obj->chambre.'</td>';
+                print '<td>'.$obj->no_role.'</td>';
+                if (!empty($obj->fk_socpeople_magistrat)) {
+                    $contact = new Contact($db);
+                    if ($contact->fetch($obj->fk_socpeople_magistrat) > 0) {
+                        $societe = new Societe($db);
+                        if ($societe->fetch($contact->socid) > 0) {
+                            $contact_name = $contact->getFullName($langs). ' ('.$societe->name.')';
                         } else {
-                            print $langs->trans("Error");
+                            $contact_name = $contact->getFullName($langs);
                         }
                     } else {
-                        print $langs->trans("NoOption");
+                        $contact_name = '';
                     }
+                    print '<td>'.$contact_name.'</td>';
                 } else {
-                    print ($value === "0" || empty($value)) ? '' : nl2br($value);
+                    print '<td></td>';
                 }
-                print ' <a href="'.$_SERVER['PHP_SELF'].'?action=edit_extrafield&key='.$key.'&id='.$object->id.'" class="editfielda">'.img_edit($langs->transnoentitiesnoconv('Edit')).'</a>';
+                print '<td>'.$obj->section.'</td>';
+                print '<td>'.dol_print_date($obj->date_decision, 'day').'</td>';
+                print '<td>'.dol_print_date($obj->date_signification, 'day').'</td>';
+                print '<td>'.dol_print_date($obj->date_recours, 'day').'</td>';
+                if (!empty($obj->fk_soc_avocat_postulant)) {
+                    $contact = new Contact($db);
+                    if ($contact->fetch($obj->fk_soc_avocat_postulant) > 0) {
+                        $societe = new Societe($db);
+                        if ($societe->fetch($contact->socid) > 0) {
+                            $contact_name = $contact->getFullName($langs). ' ('.$societe->name.')';
+                        } else {
+                            $contact_name = $contact->getFullName($langs);
+                        }
+                    } else {
+                        $contact_name = '';
+                    }
+                    print '<td>'.$contact_name.'</td>';
+                } else {
+                    print '<td></td>';
+                }
+                print '<td class="right">';
+                print '<a href="'.$_SERVER["PHP_SELF"].'?action=edit_instance&id='.$object->id.'&instance_id='.$obj->rowid.'" class="editfielda">'.img_edit().'</a>';
+                print ' <form method="POST" action="'.$_SERVER["PHP_SELF"].'" style="display:inline;">';
+                print '<input type="hidden" name="token" value="'.newToken().'">';
+                print '<input type="hidden" name="action" value="delete_instance">';
+                print '<input type="hidden" name="id" value="'.$object->id.'">';
+                print '<input type="hidden" name="instance_id" value="'.$obj->rowid.'">';
+                print '<button type="submit" class="button-delete">'.img_delete().'</button>';
+                print '</form>';
+                print '</td>';
             }
-
-            print '</td>';
             print '</tr>';
         }
+        // Ligne pour ajouter une nouvelle instance
+        print '<tr class="oddeven" style="background: #f9f9f9; border-top: 2px solid #ddd;">';
+        print '<form method="POST" action="'.$_SERVER["PHP_SELF"].'">';
+        print '<input type="hidden" name="token" value="'.newToken().'">';
+        print '<input type="hidden" name="action" value="save_instance">';
+        print '<input type="hidden" name="id" value="'.$object->id.'">';
+        print '<td>'.$form->selectarray("fk_juridiction", $juridictions, '', 1, 0, 0, 'style="width: 150px; font-size: 12px;"', 0, 0, 0, '', '', 1).'</td>';
+        print '<td>'.$form->selectarray("fk_action_juridique", $action_juridique, '', 1, 0, 0, 'style="width: 120px; font-size: 12px;"', 0, 0, 0, '', '', 1).'</td>';
+        print '<td><input type="text" name="chambre" placeholder="Nouvelle chambre" style="width: 60px; font-size: 12px;"></td>';
+        print '<td><input type="text" name="no_role" placeholder="N° de rôle" style="width: 40px; font-size: 12px;"></td>';
+        print '<td>'.$form->select_contact('', "fk_socpeople_magistrat", "fk_socpeople_magistrat", 1, '', 1, '', 0, '', 1, '', '', 'style="width: 120px; font-size: 12px;"', 0, 1).'</td>';
+        print '<td><input type="text" name="section" placeholder="Section" style="width: 90px; font-size: 12px;"></td>';
+        print '<td><input type="date" name="date_decision" style="width: 75px; font-size: 12px;"></td>';
+        print '<td><input type="date" name="date_signification" style="width: 75px; font-size: 12px;"></td>';
+        print '<td><input type="date" name="date_recours" style="width: 75px; font-size: 12px;"></td>';
+        print '<td>'.$form->select_contact('', "fk_soc_avocat_postulant", "fk_soc_avocat_postulant", 1, '', 1, '', 0, '', 1, '', '', 'style="width: 120px; font-size: 12px;"', 0, 1).'</td>';
+        print '<td class="right"><button type="submit" class="button" style="font-size: 15px; padding: 4px 15px; min-width: 45px;"><b>+</b></button></td>';
+        print '</form>';
+        print '</tr>';
+    } else {
+        print '<tr><td colspan="5" class="center">Aucune instance trouvée</td></tr>';
     }
 
     print '</table>';
-    print '</div>';
-
-    // Colonne droite
-    print '<div class="fichehalfright">';
-    print '<table class="border tableforfield centpercent">';
-
-    // Liste des extrafields à droite
-    foreach ($extrafields_right as $key) {
-        if (isset($extrafields->attributes['projet']['label'][$key])) {
-            $label = $langs->trans($extrafields->attributes['projet']['label'][$key]);
-            $value = $object->array_options['options_'.$key];
-
-            print '<tr>';
-            print '<td class="titlefield">'.$label.'</td>';
-            print '<td>';
-
-            // Mode édition pour ce champ
-            if (isset($extrafield_edit_key) && $extrafield_edit_key === $key) {
-                $filtered_options = isset($extrafields->attributes['projet']['param'][$key]['filtered_options']) ? $extrafields->attributes['projet']['param'][$key]['filtered_options'] : null;
-                $filtered_options_json = json_encode($filtered_options);
-                print '<form action="'.$_SERVER['PHP_SELF'].'" method="POST">';
-                print '<input type="hidden" name="token" value="'.newToken().'">';
-                print '<input type="hidden" name="action" value="update_extrafield">';
-                print '<input type="hidden" name="id" value="'.$object->id.'">';
-                print '<input type="hidden" name="key" value="'.$key.'">';
-                print $extrafields->showInputField($key, $object->array_options['options_'.$key], '', 'options_', '', 'data-options=\''.$filtered_options_json.'\'', $object->id, $object->table_element);
-                print ' <button type="submit" class="button">'.$langs->trans("Save").'</button>';
-                print ' <a href="'.$_SERVER['PHP_SELF'].'?id='.$object->id.'" class="button">'.$langs->trans("Cancel").'</a>';
-                print '</form>';
-            } else {
-                // Affichage en mode lecture
-                if ($extrafields->attributes['projet']['type'][$key] === 'date' && !empty($value)) {
-                    print dol_print_date($value, 'day');
-                } elseif ($extrafields->attributes['projet']['type'][$key] === 'sellist' && !empty($value)) {
-                    $options = $extrafields->attributes['projet']['param'][$key]['options'];
-                    if (!empty($options)) {
-                        $option_parts = explode(':', key($options));
-                        if (count($option_parts) >= 3) {
-                            $table = $option_parts[0];
-                            $field_label = $option_parts[1];
-                            $field_id = $option_parts[2];
-                            $sql = "SELECT ".$db->escape($field_label)." as label FROM ".MAIN_DB_PREFIX.$table." WHERE ".$db->escape($field_id)." = ".((int) $value);
-                            $resql = $db->query($sql);
-                            if ($resql) {
-                                $obj = $db->fetch_object($resql);
-                                if ($obj) {
-                                    print $langs->trans($obj->label);
-                                } else {
-                                    print $langs->trans("Unknown");
-                                }
-                            } else {
-                                print $langs->trans("Error");
-                            }
-                        } else {
-                            print $langs->trans("Error");
-                        }
-                    } else {
-                        print $langs->trans("NoOption");
-                    }
-                } else {
-                    print ($value === "0" || empty($value)) ? '' : nl2br($value);
-                }
-                print ' <a href="'.$_SERVER['PHP_SELF'].'?action=edit_extrafield&key='.$key.'&id='.$object->id.'" class="editfielda">'.img_edit($langs->transnoentitiesnoconv('Edit')).'</a>';
-            }
-
-            print '</td>';
-            print '</tr>';
-        }
-    }
-    print '<script>
-        document.addEventListener(\'DOMContentLoaded\', function () {
-            const fieldsToUpdate = {
-                "options_fk_socpeople_magistratoptions_": '.$filtered_options_js.',
-                "options_fk_socpeople_avocat_postulantoptions_": '.$filtered_options_avocat.'
-            };
-
-            Object.keys(fieldsToUpdate).forEach(function (fieldId) {
-                const selectField = document.getElementById(fieldId);
-                if (selectField) {
-                    const filteredOptions = fieldsToUpdate[fieldId];
-                    const currentValue = selectField.value;
-
-                    selectField.innerHTML = "";
-
-                    // Ajouter option vide
-                    const emptyOption = document.createElement("option");
-                    emptyOption.value = "";
-                    emptyOption.textContent = " ";
-                    selectField.appendChild(emptyOption);
-
-                    // Ajouter nouvelles options
-                    Object.keys(filteredOptions).forEach(function (key) {
-                        const option = document.createElement("option");
-                        option.value = key;
-                        option.textContent = filteredOptions[key];
-
-                        if (key == currentValue) {
-                            option.selected = true;
-                        }
-
-                        selectField.appendChild(option);
-                    });
-                } else {
-                    console.error(`Élément avec l\'ID ${fieldId} introuvable.`);
-                }
-            });
-        });
-    </script>';
-
-    print '</table>';
-    print '</div>';
     print '</div>';
     print '<div class="clearboth"></div>';
 	print '</div>';
@@ -491,6 +351,42 @@ if ($object->id > 0) {
 	print '</form>';
 } else {
 	print $langs->trans("RecordNotFound");
+}
+
+if ($_POST['action'] === 'save_instance') {
+    $sql = "INSERT INTO `".MAIN_DB_PREFIX."kjraffaire_instance` (fk_affaire, fk_juridiction, fk_action_juridique, chambre, no_role, fk_socpeople_magistrat, section, date_decision, date_signification, date_recours, fk_soc_avocat_postulant, fk_socpeople_avocat_postulant) VALUES (".
+        "'".$db->escape($_POST['id'])."', '".$db->escape($_POST['fk_juridiction'])."', '".$db->escape($_POST['fk_action_juridique'])."', '".$db->escape($_POST['chambre'])."', '".$db->escape($_POST['no_role'])."', '".$db->escape($_POST['fk_socpeople_magistrat'])."', '".$db->escape($_POST['section'])."', '".$db->escape($_POST['date_decision'])."', '".$db->escape($_POST['date_signification'])."', '".$db->escape($_POST['date_recours'])."', '".$db->escape($_POST['fk_soc_avocat_postulant'])."', '".$db->escape($_POST['fk_socpeople_avocat_postulant'])."')";
+    $db->query($sql);
+    header("Location: " . $_SERVER["PHP_SELF"] . "?id=" . $_POST['id']);
+    exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['action'] === 'update_instance') {
+    $sql = "UPDATE `".MAIN_DB_PREFIX."kjraffaire_instance` SET ".
+        "fk_juridiction='".$db->escape($_POST['fk_juridiction_update'])."', ".
+        "fk_action_juridique='".$db->escape($_POST['fk_action_juridique_update'])."', ".
+        "chambre='".$db->escape($_POST['chambre'])."', ".
+        "no_role='".$db->escape($_POST['no_role'])."', ".
+        "fk_socpeople_magistrat='".$db->escape($_POST['fk_socpeople_magistrat_update'])."', ".
+        "section='".$db->escape($_POST['section'])."', ".
+        "date_decision='".$db->escape($_POST['date_decision'])."', ".
+        "date_signification='".$db->escape($_POST['date_signification'])."', ".
+        "date_recours='".$db->escape($_POST['date_recours'])."', ".
+        "fk_soc_avocat_postulant='".$db->escape($_POST['fk_soc_avocat_postulant_update'])."', ".
+        "fk_socpeople_avocat_postulant='".$db->escape($_POST['fk_socpeople_avocat_postulant_update'])."' ".
+        "WHERE rowid='".$db->escape($_POST['instance_id'])."'";
+    $db->query($sql);
+    setEventMessages('Instance modifiée', null, 'mesgs');
+    $url = dol_buildpath("/custom/kjraffaire/affaire/instance.php", 1) . "?id=" . $_POST['id'];
+    header("Location: " . $url);
+    exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['action'] === 'delete_instance') {
+    $sql = "DELETE FROM `".MAIN_DB_PREFIX."kjraffaire_instance` WHERE rowid='".$db->escape($_POST['instance_id'])."'";
+    $db->query($sql);
+    header("Location: " . $_SERVER["PHP_SELF"] . "?id=" . $_POST['id']);
+    exit;
 }
 
 // End of page
