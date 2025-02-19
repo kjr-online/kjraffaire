@@ -222,6 +222,75 @@ if ($object->id > 0) {
 	print '<th style="width: 150px;">Juridiction</th><th style="width: 120px;">Action<br/>Juridique</th><th style="width: 60px;">Chambre</th><th style="width: 40px;">No Rôle</th><th style="width: 10px;">Magistrat</th><th style="width: 90px;">Section</th><th style="width: 10px;">Date Décision</th><th style="width: 10px;">Date Signification</th><th style="width: 10px;">Date Recours</th><th style="width: 8px;">Avocat Postulant</th><th style="width: 8px;"></th>';
 	print '</tr>';
 
+    function generateSelectContact($form, $selected_value, $htmlname, $create_label, $create_url)
+    {
+        $html_select = $form->select_contact(
+            '',
+            $selected_value,
+            $htmlname,
+            1,
+            '',
+            '',
+            1,
+            '',
+            0,
+            1,
+            0,
+            '',
+            'style="width: 120px; font-size: 12px;"'
+        );
+
+        // Ajout du script pour gérer la création
+        $html_select .= '<script>
+            $(document).ready(function () {
+                let selectField = $("#' . $htmlname . '");
+
+                // Stocker la valeur select avant maj
+                let previousValue = selectField.val();
+
+                selectField.select2({
+                    language: {
+                        noResults: function () {
+                            return $("<li class=\'select2-results__option create-option\' data-url=\'' . $create_url . '\' style=\'font-weight:bold; color:red; cursor:pointer;\'>' . $create_label . '</li>");
+                        }
+                    },
+                    escapeMarkup: function (markup) {
+                        return markup;
+                    }
+                });
+
+                // Gérer le clic sur "Créer un nouveau ..."
+                $(document).on("click", ".create-option", function () {
+                    let newWindow = window.open($(this).data("url"), "_blank");
+
+                    let checkWindow = setInterval(function () {
+                        if (newWindow.closed) {
+                            clearInterval(checkWindow);
+
+                            $.ajax({
+                                url: "' . DOL_URL_ROOT . '/custom/kjraffaire/ajax/get_contact_select.php",
+                                data: { htmlname: "' . $htmlname . '" },
+                                dataType: "json",
+                                success: function (response) {
+                                    selectField.select2("destroy"); // Detruire Select2
+                                    selectField.replaceWith(response.html); // MAJ
+                                    
+                                    $("#" + "' . $htmlname . '").select2().val(previousValue).trigger("change");
+                                },
+                                error: function (jqXHR, textStatus, errorThrown) {
+                                    console.log("Erreur AJAX:", textStatus, errorThrown);
+                                }
+                            });
+                        }
+                    }, 1000);
+                });
+            });
+        </script>';
+
+        return '<td>' . $html_select . '</td>';
+    }
+
+
     $sql_juridictions = "SELECT rowid, nom_etablissement FROM ".MAIN_DB_PREFIX."kjraffaire_dico_juridiction ORDER BY nom_etablissement ASC";
 	$resql_juridictions = $db->query($sql_juridictions);
 	$juridictions = [];
@@ -251,12 +320,12 @@ if ($object->id > 0) {
                 print '<td>'.$form->selectarray("fk_action_juridique_update", $action_juridique, $obj->fk_action_juridique, 1, '', '', 'style="width: 120px; font-size: 12px;"').'</td>';
                 print '<td><input type="text" name="chambre" value="'.$obj->chambre.'" style="width: 60px;"></td>';
                 print '<td><input type="text" name="no_role" value="'.$obj->no_role.'" style="width: 40px;"></td>';
-                print '<td>'.$form->select_contact('', $obj->fk_soc_avocat_postulant, "fk_socpeople_magistrat_update", 1, '', 1, '', 0, '', 1, '', '', 'style="width: 120px; font-size: 12px;"', '', 1).'</td>';
+                print generateSelectContact($form, $obj->fk_socpeople_magistrat, 'fk_socpeople_magistrat_update', 'Créer nouveau contact', DOL_URL_ROOT . '/contact/card.php?leftmenu=contacts&action=create');
                 print '<td><input type="text" name="section" value="'.$obj->section.'" style="width: 90px;"></td>';
                 print '<td><input type="date" name="date_decision" value="'.$obj->date_decision.'" style="width: 80px;"></td>';
                 print '<td><input type="date" name="date_signification" value="'.$obj->date_signification.'" style="width: 80px;"></td>';
                 print '<td><input type="date" name="date_recours" value="'.$obj->date_recours.'" style="width: 80px;"></td>';
-                print '<td>'.$form->select_contact('', $obj->fk_soc_avocat_postulant, 'fk_soc_avocat_postulant_update', 1, '', 1, '', 0, '', 1, '', '', 'style="width: 120px; font-size: 12px;"', '', 1).'</td>';
+                print generateSelectContact($form, $obj->fk_soc_avocat_postulant, 'fk_soc_avocat_postulant_update', 'Créer nouveau contact', DOL_URL_ROOT . '/contact/card.php?leftmenu=contacts&action=create');
                 print '<td class="right">';
                 print '<button type="submit" class="button">Enregistrer</button>';
                 print ' <a href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'" class="button">Annuler</a>';
@@ -326,12 +395,12 @@ if ($object->id > 0) {
         print '<td>'.$form->selectarray("fk_action_juridique", $action_juridique, '', 1, 0, 0, 'style="width: 120px; font-size: 12px;"', 0, 0, 0, '', '', 1).'</td>';
         print '<td><input type="text" name="chambre" placeholder="Nouvelle chambre" style="width: 60px; font-size: 12px;"></td>';
         print '<td><input type="text" name="no_role" placeholder="N° de rôle" style="width: 40px; font-size: 12px;"></td>';
-        print '<td>'.$form->select_contact('', "fk_socpeople_magistrat", "fk_socpeople_magistrat", 1, '', 1, '', 0, '', 1, '', '', 'style="width: 120px; font-size: 12px;"', 0, 1).'</td>';
+        print generateSelectContact($form, '', 'fk_socpeople_magistrat', 'Créer nouveau contact', DOL_URL_ROOT . '/contact/card.php?leftmenu=contacts&action=create');
         print '<td><input type="text" name="section" placeholder="Section" style="width: 90px; font-size: 12px;"></td>';
         print '<td><input type="date" name="date_decision" style="width: 75px; font-size: 12px;"></td>';
         print '<td><input type="date" name="date_signification" style="width: 75px; font-size: 12px;"></td>';
         print '<td><input type="date" name="date_recours" style="width: 75px; font-size: 12px;"></td>';
-        print '<td>'.$form->select_contact('', "fk_soc_avocat_postulant", "fk_soc_avocat_postulant", 1, '', 1, '', 0, '', 1, '', '', 'style="width: 120px; font-size: 12px;"', 0, 1).'</td>';
+        print generateSelectContact($form, '', 'fk_soc_avocat_postulant', 'Créer nouveau contact', DOL_URL_ROOT . '/contact/card.php?leftmenu=contacts&action=create');
         print '<td class="right"><button type="submit" class="button" style="font-size: 15px; padding: 4px 15px; min-width: 45px;"><b>+</b></button></td>';
         print '</form>';
         print '</tr>';
