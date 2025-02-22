@@ -2,6 +2,32 @@
 
 include_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
 
+//==========================================
+// Ajout des champs extras pour les services
+//==========================================
+$extrafields = new ExtraFields($this->db);
+$result=$extrafields->addExtraField(
+    'horaire', 
+    "Facturation horaire", 
+    'boolean', 
+    100,  
+    0, 
+    'product',
+    0, 
+    0, 
+    '', 
+    array('options'=>array(1=>1)), 
+    1, 
+    '', 
+    1, 
+    0, 
+    '', 
+    '', 
+    'kjraffaire@kjraffaire', 
+    'isModEnabled("kjraffaire")'
+);
+
+
 //========================================
 // Ajout des champs extras pour les tâches
 //========================================
@@ -35,7 +61,6 @@ $result=$extrafields->addExtraField(
 //===========================================================
 // Ajout des champs extras pour les affaires dans les projets
 //===========================================================
-
 $extrafields = new ExtraFields($this->db);
 $result=$extrafields->addExtraField(
     'affaire', 
@@ -94,6 +119,29 @@ $result=$extrafields->addExtraField(
     0, 
     '', 
     array('options'=>array(1=>1)), 
+    1, 
+    '', 
+    '($object->array_options[\'options_affaire\']==1)?1:0',
+    0, 
+    '', 
+    '', 
+    'kjraffaire@kjraffaire', 
+    'isModEnabled("kjraffaire")'
+);
+
+// service à facturer   
+$params = array('options' => array('product:label:rowid' => ''));
+$result=$extrafields->addExtraField(
+    'service', 
+    "Service", 
+    'sellist', 
+    150,  
+    0, 
+    'projet',
+    0, 
+    0, 
+    '', 
+    $params, 
     1, 
     '', 
     '($object->array_options[\'options_affaire\']==1)?1:0',
