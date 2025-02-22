@@ -160,19 +160,19 @@ $arrayfields = array(
 	't.fk_task_parent' => array('label' => "RefTaskParent", 'checked' => 0, 'position' => 70),
 	't.label' => array('label' => "LabelTask", 'checked' => 1, 'position' => 75),
 	't.description' => array('label' => "Description", 'checked' => 0, 'position' => 80),
-	't.dateo' => array('label' => "DateStart", 'checked' => 1, 'position' => 100),
-	't.datee' => array('label' => "Deadline", 'checked' => 1, 'position' => 101),
-	'p.ref' => array('label' => "ProjectRef", 'checked' => 1, 'position' => 151),
-	'p.title' => array('label' => "ProjectLabel", 'checked' => 0, 'position' => 152),
+	//'t.dateo' => array('label' => "DateStart", 'checked' => 1, 'position' => 100),
+	//'t.datee' => array('label' => "Deadline", 'checked' => 1, 'position' => 101),
+	'p.ref' => array('label' => "Ref affaire", 'checked' => 1, 'position' => 151),
+	'p.title' => array('label' => "Libellé affaire", 'checked' => 0, 'position' => 152),
 	's.nom' => array('label' => "ThirdParty", 'checked' => -1, 'csslist' => 'tdoverflowmax125', 'position' => 200),
 	's.name_alias' => array('label' => "AliasNameShort", 'checked' => 0, 'csslist' => 'tdoverflowmax125', 'position' => 201),
-	'p.fk_statut' => array('label' => "ProjectStatus", 'checked' => 1, 'position' => 205),
-	't.planned_workload' => array('label' => "PlannedWorkload", 'checked' => 1, 'position' => 302),
+	'p.fk_statut' => array('label' => "Statut affaire", 'checked' => 1, 'position' => 205),
+	//'t.planned_workload' => array('label' => "PlannedWorkload", 'checked' => 1, 'position' => 302),
 	't.duration_effective' => array('label' => "TimeSpent", 'checked' => 1, 'position' => 303),
 	't.progress_calculated' => array('label' => "ProgressCalculated", 'checked' => -1, 'position' => 304),
 	't.progress' => array('label' => "ProgressDeclared", 'checked' => 1, 'position' => 305),
 	't.progress_summary' => array('label' => "TaskProgressSummary", 'checked' => 1, 'position' => 306),
-	't.budget_amount' => array('label' => "Budget", 'checked' => 0, 'position' => 307),
+	//'t.budget_amount' => array('label' => "Budget", 'checked' => 0, 'position' => 307),
 	't.tobill' => array('label' => "TimeToBill", 'checked' => 0, 'position' => 310),
 	't.billed' => array('label' => "TimeBilled", 'checked' => 0, 'position' => 311),
 	't.datec' => array('label' => "DateCreation", 'checked' => 0, 'position' => 500),
@@ -610,7 +610,7 @@ $num = $db->num_rows($resql);
 if ($num == 1 && getDolGlobalString('MAIN_SEARCH_DIRECT_OPEN_IF_ONLY_ONE') && $search_all) {
 	$obj = $db->fetch_object($resql);
 	$id = $obj->id;		// in select, task id has been aliases into 'id'
-	header("Location: ".DOL_URL_ROOT.'/projet/tasks/task.php?id='.$id.'&withproject=1');
+	header("Location: ".DOL_URL_ROOT.'/custom/kjraffaire/tache/task.php?id='.$id.'&withproject=1');
 	exit;
 }
 
@@ -1298,7 +1298,9 @@ while ($i < $imaxinloop) {
 			// Project ref
 			if (!empty($arrayfields['p.ref']['checked'])) {
 				print '<td class="nowraponall tdoverflowmax150">';
-				print $projectstatic->getNomUrl(1, 'task');
+				//print $projectstatic->getNomUrl(1, 'task');
+				print '<a href="'.DOL_URL_ROOT.'/custom/kjraffaire/affaire/card.php?id='.$obj->projectid.'">'.$obj->projectref.'</a>';
+
 				if ($projectstatic->hasDelay()) {
 					print img_warning("Late");
 				}
