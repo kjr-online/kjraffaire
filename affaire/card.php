@@ -239,7 +239,8 @@ if (empty($reshook)) {
 			$object->usage_task           = (GETPOST('usage_task', 'alpha') == 'on' ? 1 : 0);
 			$object->usage_bill_time      = (GETPOST('usage_bill_time', 'alpha') == 'on' ? 1 : 0);
 			$object->usage_organize_event = (GETPOST('usage_organize_event', 'alpha') == 'on' ? 1 : 0);
-
+			$object->usage_bill_time      = 1;
+		
 			// Création du projet
 			$result = $object->create($user);
 			if ($result > 0) {
