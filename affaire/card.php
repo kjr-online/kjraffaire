@@ -188,6 +188,10 @@ if (empty($reshook)) {
 		
 		// Mettre extrafield 'affaire' à 1
 		$object->array_options['options_affaire'] = 1;
+		$object->usage_opportunity = 0;
+		$object->usage_task = 1;
+		$object->usage_bill_time = 1;
+	
 		// Afficher les extras fields Instance
 		$object->array_options['options_instance'] = 1;
 		$error = 0;
@@ -240,6 +244,8 @@ if (empty($reshook)) {
 			$object->usage_bill_time      = (GETPOST('usage_bill_time', 'alpha') == 'on' ? 1 : 0);
 			$object->usage_organize_event = (GETPOST('usage_organize_event', 'alpha') == 'on' ? 1 : 0);
 			$object->usage_bill_time      = 1;
+			$object->usage_task      	  = 1;
+			$object->usage_opportunity    = 0;
 		
 			// Création du projet
 			$result = $object->create($user);
@@ -348,6 +354,10 @@ if (empty($reshook)) {
 			$object->usage_bill_time      = (GETPOST('usage_bill_time', 'alpha') == 'on' ? 1 : 0);
 			$object->usage_organize_event = (GETPOST('usage_organize_event', 'alpha') == 'on' ? 1 : 0);
 
+			$object->usage_opportunity    = 0;
+			$object->usage_task           = 1;
+			$object->usage_bill_time      = 1;
+			
 			// Fill array 'array_options' with data from add form
 			$ret = $extrafields->setOptionalsFromPost(null, $object, '@GETPOSTISSET');
 			if ($ret < 0) {
@@ -820,6 +830,10 @@ if ($action == 'create' && $user->hasRight('projet', 'creer')) {
 
 	// Mettre extrafield 'affaire' à 1
 	$object->array_options['options_affaire'] = 1;
+	$object->usage_opportunity = 0;
+	$object->usage_task = 1;
+	$object->usage_bill_time = 1;
+	
 
 	// Visibility
 	print '<tr><td>'.$langs->trans("Visibility").'</td><td class="maxwidthonsmartphone">';
