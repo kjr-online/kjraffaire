@@ -55,6 +55,9 @@ $contextpage = GETPOST('contextpage', 'aZ') ? GETPOST('contextpage', 'aZ') : 'pr
 $backtopage = GETPOST('backtopage', 'alpha');					// if not set, a default page will be used
 //$backtopageforcancel = GETPOST('backtopageforcancel', 'alpha');	// if not set, $backtopage will be used
 //$backtopagejsfields = GETPOST('backtopagejsfields', 'alpha');
+$morehtmlref .= $langs->trans("Affaire") . ': ';
+//$morehtmlref .= $projectstatic->getNomUrl(1);
+$morehtmlref .= '<a href="'.DOL_URL_ROOT.'/custom/kjraffaire/tache/tasks.php?id='.$projectstatic->id.'">'.$projectstatic->ref.'</a>';			
 $optioncss  = GETPOST('optioncss', 'aZ');
 $backtopage = GETPOST('backtopage', 'alpha');
 $toselect = GETPOST('toselect', 'array');
@@ -368,6 +371,8 @@ if ($action == 'createtask' && $user->hasRight('projet', 'creer')) {
 
 			// Fill array 'array_options' with data from add form
 			$ret = $extrafields->setOptionalsFromPost(null, $task);
+
+			$task->array_options['options_etat'] = 'Saisie';
 
 			$taskid = $task->create($user);
 
