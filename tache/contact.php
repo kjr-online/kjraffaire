@@ -340,8 +340,9 @@ if ($id > 0 || !empty($ref)) {
 		if (empty($withproject)) {
 			$result = $projectstatic->fetch($object->fk_project);
 			$morehtmlref .= '<div class="refidno">';
-			$morehtmlref .= $langs->trans("Project").': ';
-			$morehtmlref .= $projectstatic->getNomUrl(1);
+			$morehtmlref .= $langs->trans("Affaire") . ': ';
+			//$morehtmlref .= $projectstatic->getNomUrl(1);
+			$morehtmlref .= '<a href="'.DOL_URL_ROOT.'/custom/kjraffaire/tache/tasks.php?id='.$projectstatic->id.'">'.$projectstatic->ref.'</a>';			
 			$morehtmlref .= '<br>';
 
 			// Third party
