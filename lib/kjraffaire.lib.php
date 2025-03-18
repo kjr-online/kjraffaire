@@ -232,11 +232,30 @@ function affaire_prepare_head(Project $project, $moreparam = '')
 	$head[$h][2] = 'project';
 	$h++;
 
-	// Onglet Instance
-	$head[$h][0] = DOL_URL_ROOT.'/custom/kjraffaire/affaire/instance.php?id='.$project->id;
-	$head[$h][1] = "Instance";
-	$head[$h][2] = 'intance';
-	$h++;
+	// Test si "Type d'affaire" = "Procédure", dans ce cas affichage de l'onglet :
+	require_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
+	$extrafields = new ExtraFields($db);
+	$extrafields->fetch_name_optionals_label('project');
+
+	if (!empty($project->array_options) && isset($project->array_options['options_type_affaire'])) {
+		$typeAffaireId = (int) $project->array_options['options_type_affaire']; // ID extrafield
+
+		// Req pour récup la valeur texte du dictionnaire
+		$sql = "SELECT label FROM ".MAIN_DB_PREFIX."kjraffaire_dico_type_affaire WHERE rowid = ".$typeAffaireId." AND active = 1";
+		$resql = $db->query($sql);
+
+		if ($resql) {
+			$obj = $db->fetch_object($resql);
+			if ($obj && $obj->label == 'Procédure') {
+				$head[$h][0] = DOL_URL_ROOT.'/custom/kjraffaire/affaire/instance.php?id='.$project->id;
+				$head[$h][1] = "Instance";
+				$head[$h][2] = 'instance';
+				$h++;
+			}
+		} else {
+			dol_syslog("Erreur SQL : ".$db->lasterror(), LOG_ERR);
+		}
+	}
 
 	$nbContacts = 0;
 	// Enable caching of project count Contacts
