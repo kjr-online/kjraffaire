@@ -74,6 +74,20 @@ class ActionsKjraffaire extends CommonHookActions
 	}
 
 
+	public $extrafields_to_exclude_list = [
+		'ef.type_affaire',
+		'ef.contentieux',
+		'ef.affaire',
+		'ef.service'
+	];
+
+	public $extrafields_to_exclude_card= [
+		'type_affaire',
+		'contentieux',
+		'affaire',
+		'service'
+	];
+
 	/**
 	 * Execute action
 	 *
@@ -90,6 +104,30 @@ class ActionsKjraffaire extends CommonHookActions
 		$this->resprints = '';
 		return 0;
 	}
+
+	function showOptionals($parameters, &$object, &$action, $hookmanager)
+    {
+		global $extrafields;
+		// Vérifiez si on est dans la vue card des projets
+		if (($object->element == 'project') && (!preg_match('/kjraffaire/', $_SERVER['PHP_SELF']))) {
+			foreach ($this->extrafields_to_exclude_card as $field) {
+                unset($extrafields->attributes['projet']['label'][$field]); 
+            }
+        }
+        return 0;
+    }
+
+	function formObjectOptions($parameters, &$object, &$action, $hookmanager)
+    {
+		global $extrafields;
+		// Vérifiez si on est dans la vue card des projets
+		if (($object->element == 'project') && (!preg_match('/kjraffaire/', $_SERVER['PHP_SELF']))) {
+			foreach ($this->extrafields_to_exclude_card as $field) {
+			    unset($extrafields->attributes['projet']['label'][$field]); 
+            }			
+        }
+        return 0;
+    }
 
 	/**
 	 * Overloading the doActions function : replacing the parent's function with the one below
@@ -108,22 +146,8 @@ class ActionsKjraffaire extends CommonHookActions
 
 		// Il ne faut pas pouvoir les extrafields des affaires dans les listes de projets
         global $arrayfields,$contextpage;
-        $extrafields_to_exclude = [
-			'ef.type_affaire',
-			'ef.fk_kjraffaire_dico_juridiction',
-			'ef.fk_kjraffaire_dico_action_juridique',
-			'ef.chambre',
-			'ef.no_role',
-			'ef.fk_soc_magistrat',
-			'ef.fk_socpeople_magistrat',
-			'ef.section',
-			'ef.date_decision',
-			'ef.date_signification',
-			'ef.fk_soc_avocat_postulant',
-			'ef.fk_socpeople_avocat_postulant'
-		];
 		if (!preg_match('/kjraffaire/', $_SERVER['PHP_SELF'])){
-            foreach ($extrafields_to_exclude as $field) {
+            foreach ($this->extrafields_to_exclude_list as $field) {
                 if (isset($arrayfields[$field])) {
                     unset($arrayfields[$field]); 
                 }
@@ -579,5 +603,4 @@ class ActionsKjraffaire extends CommonHookActions
 
         return 0;
     }
-
 }
