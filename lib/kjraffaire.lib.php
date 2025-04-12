@@ -1772,3 +1772,353 @@ function affaireLinesa(&$inc, $parent, &$lines, &$level, $var, $showproject, &$t
 	return $inc;
 }
 
+/**
+ * Return HTML table with list of projects and number of opened tasks
+ *
+ * @param	DoliDB	$db					Database handler
+ * @param	Form	$form				Object form
+ * @param   int		$socid				Id thirdparty
+ * @param   int		$projectsListId     Id of project I have permission on
+ * @param   int		$mytasks            Limited to task I am contact to
+ * @param	int		$status				-1=No filter on statut, 0 or 1 = Filter on status
+ * @param	array	$listofoppstatus	List of opportunity status
+ * @param   array   $hiddenfields       List of info to not show ('projectlabel', 'declaredprogress', '...', )
+ * @param	int		$max				Max nb of record to show in HTML list
+ * @return	void
+ */
+function print_projecttasks_array_horsaffaires($db, $form, $socid, $projectsListId, $mytasks = 0, $status = -1, $listofoppstatus = array(), $hiddenfields = array(), $max = 0)
+{
+	global $langs, $conf, $user;
+	global $theme_datacolor;
+
+	$maxofloop = (!getDolGlobalString('MAIN_MAXLIST_OVERLOAD') ? 500 : $conf->global->MAIN_MAXLIST_OVERLOAD);
+
+	require_once DOL_DOCUMENT_ROOT.'/projet/class/project.class.php';
+
+	$listofstatus = array_keys($listofoppstatus);
+
+	if (is_array($listofstatus) && getDolGlobalString('USE_COLOR_FOR_PROSPECTION_STATUS')) {
+		// Define $themeColorId and array $statusOppList for each $listofstatus
+		$themeColorId = 0;
+		$statusOppList = array();
+		foreach ($listofstatus as $oppStatus) {
+			$oppStatusCode = dol_getIdFromCode($db, $oppStatus, 'c_lead_status', 'rowid', 'code');
+			if ($oppStatusCode) {
+				$statusOppList[$oppStatus]['code'] = $oppStatusCode;
+				$statusOppList[$oppStatus]['color'] = isset($theme_datacolor[$themeColorId]) ? implode(', ', $theme_datacolor[$themeColorId]) : '';
+			}
+			$themeColorId++;
+		}
+	}
+
+	$projectstatic = new Project($db);
+	$thirdpartystatic = new Societe($db);
+
+	$sortfield = '';
+	$sortorder = '';
+	$project_year_filter = 0;
+
+	$title = $langs->trans("Projects");
+	if (strcmp((string) $status, '') && $status >= 0) {
+		$title = $langs->trans("Projects").' '.$langs->trans($projectstatic->labelStatus[$status]);
+	}
+
+	print '<!-- print_projecttasks_array -->';
+	print '<div class="div-table-responsive-no-min">';
+	print '<table class="noborder centpercent">';
+
+	$sql = " FROM ".MAIN_DB_PREFIX."projet as p";
+	$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."projet_extrafields as e ON e.fk_object=p.rowid";
+	if ($mytasks) {
+		$sql .= ", ".MAIN_DB_PREFIX."projet_task as t";
+		$sql .= ", ".MAIN_DB_PREFIX."element_contact as ec";
+		$sql .= ", ".MAIN_DB_PREFIX."c_type_contact as ctc";
+	} else {
+		$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."projet_task as t ON p.rowid = t.fk_projet";
+	}
+	$sql .= " WHERE p.entity IN (".getEntity('project').")";
+	$sql .= " AND (e.affaire is null OR e.affaire=0) ";
+	$sql .= " AND p.rowid IN (".$db->sanitize($projectsListId).")";
+	if ($socid) {
+		$sql .= "  AND (p.fk_soc IS NULL OR p.fk_soc = 0 OR p.fk_soc = ".((int) $socid).")";
+	}
+	if ($mytasks) {
+		$sql .= " AND p.rowid = t.fk_projet";
+		$sql .= " AND ec.element_id = t.rowid";
+		$sql .= " AND ec.fk_socpeople = ".((int) $user->id);
+		$sql .= " AND ec.fk_c_type_contact = ctc.rowid"; // Replace the 2 lines with ec.fk_c_type_contact in $arrayidtypeofcontact
+		$sql .= " AND ctc.element = 'project_task'";
+	}
+	if ($status >= 0) {
+		$sql .= " AND p.fk_statut = ".(int) $status;
+	}
+	if (getDolGlobalString('PROJECT_LIMIT_YEAR_RANGE')) {
+		$project_year_filter = GETPOST("project_year_filter");
+		//Check if empty or invalid year. Wildcard ignores the sql check
+		if ($project_year_filter != "*") {
+			if (empty($project_year_filter) || !ctype_digit($project_year_filter)) {
+				$project_year_filter = date("Y");
+			}
+			$sql .= " AND (p.dateo IS NULL OR p.dateo <= ".$db->idate(dol_get_last_day($project_year_filter, 12, false)).")";
+			$sql .= " AND (p.datee IS NULL OR p.datee >= ".$db->idate(dol_get_first_day($project_year_filter, 1, false)).")";
+		}
+	}
+
+	// Get id of project we must show tasks
+	$arrayidofprojects = array();
+	$sql1 = "SELECT p.rowid as projectid";
+	$sql1 .= $sql;
+	$resql = $db->query($sql1);
+	if ($resql) {
+		$i = 0;
+		$num = $db->num_rows($resql);
+		while ($i < $num) {
+			$objp = $db->fetch_object($resql);
+			$arrayidofprojects[$objp->projectid] = $objp->projectid;
+			$i++;
+		}
+	} else {
+		dol_print_error($db);
+	}
+	if (empty($arrayidofprojects)) {
+		$arrayidofprojects[0] = -1;
+	}
+
+	// Get list of project with calculation on tasks
+	$sql2 = "SELECT p.rowid as projectid, p.ref, p.title, p.fk_soc,";
+	$sql2 .= " s.rowid as socid, s.nom as socname, s.name_alias,";
+	$sql2 .= " s.code_client, s.code_compta, s.client,";
+	$sql2 .= " s.code_fournisseur, s.code_compta_fournisseur, s.fournisseur,";
+	$sql2 .= " s.logo, s.email, s.entity,";
+	$sql2 .= " p.fk_user_creat, p.public, p.fk_statut as status, p.fk_opp_status as opp_status, p.opp_percent, p.opp_amount,";
+	$sql2 .= " p.dateo, p.datee,";
+	$sql2 .= " COUNT(t.rowid) as nb, SUM(t.planned_workload) as planned_workload, SUM(t.planned_workload * t.progress / 100) as declared_progess_workload";
+	$sql2 .= " FROM ".MAIN_DB_PREFIX."projet as p";
+	$sql2 .= " LEFT JOIN ".MAIN_DB_PREFIX."projet_extrafields as e ON e.fk_object=p.rowid";
+	$sql2 .= " LEFT JOIN ".MAIN_DB_PREFIX."societe as s ON s.rowid = p.fk_soc";
+	$sql2 .= " LEFT JOIN ".MAIN_DB_PREFIX."projet_task as t ON p.rowid = t.fk_projet";
+	$sql2 .= " WHERE p.rowid IN (".$db->sanitize(implode(',', $arrayidofprojects)).")";
+	$sql2 .= " AND (e.affaire is null OR e.affaire=0) ";
+	$sql2 .= " GROUP BY p.rowid, p.ref, p.title, p.fk_soc, s.rowid, s.nom, s.name_alias, s.code_client, s.code_compta, s.client, s.code_fournisseur, s.code_compta_fournisseur, s.fournisseur,";
+	$sql2 .= " s.logo, s.email, s.entity, p.fk_user_creat, p.public, p.fk_statut, p.fk_opp_status, p.opp_percent, p.opp_amount, p.dateo, p.datee";
+	$sql2 .= " ORDER BY p.title, p.ref";
+
+	$resql = $db->query($sql2);
+	if ($resql) {
+		$othernb = 0;
+		$total_task = 0;
+		$total_opp_amount = 0;
+		$ponderated_opp_amount = 0;
+		$total_plannedworkload = 0;
+		$total_declaredprogressworkload = 0;
+
+		$num = $db->num_rows($resql);
+		$nbofloop = min($num, (!getDolGlobalString('MAIN_MAXLIST_OVERLOAD') ? 500 : $conf->global->MAIN_MAXLIST_OVERLOAD));
+		$i = 0;
+
+		print '<tr class="liste_titre">';
+		print_liste_field_titre($title.'<a href="'.DOL_URL_ROOT.'/projet/list.php?search_status='.((int) $status).'"><span class="badge marginleftonlyshort">'.$num.'</span></a>', $_SERVER["PHP_SELF"], "", "", "", "", $sortfield, $sortorder);
+		print_liste_field_titre("ThirdParty", $_SERVER["PHP_SELF"], "", "", "", "", $sortfield, $sortorder);
+		if (getDolGlobalString('PROJECT_USE_OPPORTUNITIES')) {
+			if (!in_array('prospectionstatus', $hiddenfields)) {
+				print_liste_field_titre("OpportunityStatus", "", "", "", "", 'style="max-width: 100px"', $sortfield, $sortorder, 'center ');
+			}
+			print_liste_field_titre($form->textwithpicto($langs->trans("Amount"), $langs->trans("OpportunityAmount").' ('.$langs->trans("Tooltip").' = '.$langs->trans("OpportunityWeightedAmount").')'), "", "", "", "", 'style="max-width: 100px"', $sortfield, $sortorder, 'right ');
+			//print_liste_field_titre('OpportunityWeightedAmount', '', '', '', '', 'align="right"', $sortfield, $sortorder);
+		}
+		if (!getDolGlobalString('PROJECT_HIDE_TASKS')) {
+			print_liste_field_titre("Tasks", "", "", "", "", 'align="right"', $sortfield, $sortorder);
+			if (!in_array('plannedworkload', $hiddenfields)) {
+				print_liste_field_titre("PlannedWorkload", "", "", "", "", 'style="max-width: 100px"', $sortfield, $sortorder, 'right ');
+			}
+			if (!in_array('declaredprogress', $hiddenfields)) {
+				print_liste_field_titre("%", "", "", "", "", '', $sortfield, $sortorder, 'right ', $langs->trans("ProgressDeclared"));
+			}
+		}
+		if (!in_array('projectstatus', $hiddenfields)) {
+			print_liste_field_titre("Status", "", "", "", "", '', $sortfield, $sortorder, 'right ');
+		}
+		print "</tr>\n";
+
+		while ($i < $nbofloop) {
+			$objp = $db->fetch_object($resql);
+
+			if ($max && $i >= $max) {
+				$othernb++;
+				$i++;
+				$total_task += $objp->nb;
+				$total_opp_amount += $objp->opp_amount;
+				$opp_weighted_amount = $objp->opp_percent * $objp->opp_amount / 100;
+				$ponderated_opp_amount += price2num($opp_weighted_amount);
+				$plannedworkload = $objp->planned_workload;
+				$total_plannedworkload += $plannedworkload;
+				$declaredprogressworkload = $objp->declared_progess_workload;
+				$total_declaredprogressworkload += $declaredprogressworkload;
+				continue;
+			}
+
+			$projectstatic->id = $objp->projectid;
+			$projectstatic->user_author_id = $objp->fk_user_creat;
+			$projectstatic->public = $objp->public;
+
+			// Check is user has read permission on project
+			$userAccess = $projectstatic->restrictedProjectArea($user);
+			if ($userAccess >= 0) {
+				$projectstatic->ref = $objp->ref;
+				$projectstatic->status = $objp->status;
+				$projectstatic->title = $objp->title;
+				$projectstatic->date_end = $db->jdate($objp->datee);
+				$projectstatic->date_start = $db->jdate($objp->dateo);
+
+				print '<tr class="oddeven">';
+
+				print '<td class="tdoverflowmax150">';
+				print $projectstatic->getNomUrl(1, '', 0, '', '-', 0, -1, 'nowraponall');
+				if (!in_array('projectlabel', $hiddenfields)) {
+					print '<br><span class="opacitymedium small">'.dol_escape_htmltag($objp->title).'</span>';
+				}
+				print '</td>';
+
+				print '<td class="nowraponall tdoverflowmax100">';
+				if ($objp->fk_soc > 0) {
+					$thirdpartystatic->id = $objp->socid;
+					$thirdpartystatic->name = $objp->socname;
+					//$thirdpartystatic->name_alias = $objp->name_alias;
+					//$thirdpartystatic->code_client = $objp->code_client;
+					$thirdpartystatic->code_compta = $objp->code_compta;
+					$thirdpartystatic->client = $objp->client;
+					//$thirdpartystatic->code_fournisseur = $objp->code_fournisseur;
+					$thirdpartystatic->code_compta_fournisseur = $objp->code_compta_fournisseur;
+					$thirdpartystatic->fournisseur = $objp->fournisseur;
+					$thirdpartystatic->logo = $objp->logo;
+					$thirdpartystatic->email = $objp->email;
+					$thirdpartystatic->entity = $objp->entity;
+					print $thirdpartystatic->getNomUrl(1);
+				}
+				print '</td>';
+
+				if (getDolGlobalString('PROJECT_USE_OPPORTUNITIES')) {
+					if (!in_array('prospectionstatus', $hiddenfields)) {
+						print '<td class="center tdoverflowmax75">';
+						// Because color of prospection status has no meaning yet, it is used if hidden constant is set
+						if (!getDolGlobalString('USE_COLOR_FOR_PROSPECTION_STATUS')) {
+							$oppStatusCode = dol_getIdFromCode($db, $objp->opp_status, 'c_lead_status', 'rowid', 'code');
+							if ($langs->trans("OppStatus".$oppStatusCode) != "OppStatus".$oppStatusCode) {
+								print $langs->trans("OppStatus".$oppStatusCode);
+							}
+						} else {
+							if (isset($statusOppList[$objp->opp_status])) {
+								$oppStatusCode = $statusOppList[$objp->opp_status]['code'];
+								$oppStatusColor = $statusOppList[$objp->opp_status]['color'];
+							} else {
+								$oppStatusCode = dol_getIdFromCode($db, $objp->opp_status, 'c_lead_status', 'rowid', 'code');
+								$oppStatusColor = '';
+							}
+							if ($oppStatusCode) {
+								if (!empty($oppStatusColor)) {
+									print '<a href="'.dol_buildpath('/projet/list.php?search_opp_status='.$objp->opp_status, 1).'" style="display: inline-block; width: 4px; border: 5px solid rgb('.$oppStatusColor.'); border-radius: 2px;" title="'.$langs->trans("OppStatus".$oppStatusCode).'"></a>';
+								} else {
+									print '<a href="'.dol_buildpath('/projet/list.php?search_opp_status='.$objp->opp_status, 1).'" title="'.$langs->trans("OppStatus".$oppStatusCode).'">'.$oppStatusCode.'</a>';
+								}
+							}
+						}
+						print '</td>';
+					}
+
+					print '<td class="right">';
+					if ($objp->opp_percent && $objp->opp_amount) {
+						$opp_weighted_amount = $objp->opp_percent * $objp->opp_amount / 100;
+						$alttext = $langs->trans("OpportunityWeightedAmount").' '.price($opp_weighted_amount, 0, '', 1, -1, 0, $conf->currency);
+						$ponderated_opp_amount += price2num($opp_weighted_amount);
+					}
+					if ($objp->opp_amount) {
+						print '<span class="amount" title="'.$alttext.'">'.$form->textwithpicto(price($objp->opp_amount, 0, '', 1, -1, 0), $alttext).'</span>';
+					}
+					print '</td>';
+				}
+
+				if (!getDolGlobalString('PROJECT_HIDE_TASKS')) {
+					print '<td class="right">'.$objp->nb.'</td>';
+
+					$plannedworkload = $objp->planned_workload;
+					$total_plannedworkload += $plannedworkload;
+					if (!in_array('plannedworkload', $hiddenfields)) {
+						print '<td class="right nowraponall">'.($plannedworkload ? convertSecondToTime($plannedworkload) : '').'</td>';
+					}
+					if (!in_array('declaredprogress', $hiddenfields)) {
+						$declaredprogressworkload = $objp->declared_progess_workload;
+						$total_declaredprogressworkload += $declaredprogressworkload;
+						print '<td class="right nowraponall">';
+						//print $objp->planned_workload.'-'.$objp->declared_progess_workload."<br>";
+						print($plannedworkload ? round(100 * $declaredprogressworkload / $plannedworkload, 0).'%' : '');
+						print '</td>';
+					}
+				}
+
+				if (!in_array('projectstatus', $hiddenfields)) {
+					print '<td class="right">';
+					print $projectstatic->getLibStatut(3);
+					print '</td>';
+				}
+
+				print "</tr>\n";
+
+				$total_task += $objp->nb;
+				$total_opp_amount += $objp->opp_amount;
+			}
+
+			$i++;
+		}
+
+		if ($othernb) {
+			print '<tr class="oddeven">';
+			print '<td class="nowrap" colspan="5">';
+			print '<span class="opacitymedium">'.$langs->trans("More").'...'.($othernb < $maxofloop ? ' ('.$othernb.')' : '').'</span>';
+			print '</td>';
+			print "</tr>\n";
+		}
+
+		print '<tr class="liste_total">';
+		print '<td>'.$langs->trans("Total")."</td><td></td>";
+		if (getDolGlobalString('PROJECT_USE_OPPORTUNITIES')) {
+			if (!in_array('prospectionstatus', $hiddenfields)) {
+				print '<td class="liste_total"></td>';
+			}
+			print '<td class="liste_total right">';
+			//$form->textwithpicto(price($ponderated_opp_amount, 0, '', 1, -1, -1, $conf->currency), $langs->trans("OpportunityPonderatedAmountDesc"), 1);
+			print $form->textwithpicto(price($total_opp_amount, 0, '', 1, -1, 0), $langs->trans("OpportunityPonderatedAmountDesc").' : '.price($ponderated_opp_amount, 0, '', 1, -1, 0, $conf->currency));
+			print '</td>';
+		}
+		if (!getDolGlobalString('PROJECT_HIDE_TASKS')) {
+			print '<td class="liste_total right">'.$total_task.'</td>';
+			if (!in_array('plannedworkload', $hiddenfields)) {
+				print '<td class="liste_total right">'.($total_plannedworkload ? convertSecondToTime($total_plannedworkload) : '').'</td>';
+			}
+			if (!in_array('declaredprogress', $hiddenfields)) {
+				print '<td class="liste_total right">'.($total_plannedworkload ? round(100 * $total_declaredprogressworkload / $total_plannedworkload, 0).'%' : '').'</td>';
+			}
+		}
+		if (!in_array('projectstatus', $hiddenfields)) {
+			print '<td class="liste_total"></td>';
+		}
+		print '</tr>';
+
+		$db->free($resql);
+	} else {
+		dol_print_error($db);
+	}
+
+	print "</table>";
+	print '</div>';
+
+	if (getDolGlobalString('PROJECT_LIMIT_YEAR_RANGE')) {
+		//Add the year filter input
+		print '<form method="get" action="'.$_SERVER["PHP_SELF"].'">';
+		print '<table width="100%">';
+		print '<tr>';
+		print '<td>'.$langs->trans("Year").'</td>';
+		print '<td class="right"><input type="text" size="4" class="flat" name="project_year_filter" value="'.((int) $project_year_filter).'"/>';
+		print "</tr>\n";
+		print '</table></form>';
+	}
+}

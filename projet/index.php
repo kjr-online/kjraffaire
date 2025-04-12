@@ -31,6 +31,7 @@ require_once DOL_DOCUMENT_ROOT.'/projet/class/task.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formfile.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/project.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/date.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/custom/kjraffaire/lib/kjraffaire.lib.php';
 
 // Load translation files required by the page
 $langs->loadLangs(array('projects', 'companies'));
@@ -199,7 +200,7 @@ print '<div class="firstcolumn fichehalfleft boxhalfleft" id="boxhalfleft">';
 include DOL_DOCUMENT_ROOT.'/projet/graph_opportunities.inc.php';
 
 // List of draft projects
-print_projecttasks_array($db, $form, $socid, $projectsListId, 0, 0, $listofoppstatus, array('projectlabel', 'plannedworkload', 'declaredprogress', 'prospectionstatus', 'projectstatus'), $max);
+print_projecttasks_array_horsaffaires($db, $form, $socid, $projectsListId, 0, 0, $listofoppstatus, array('projectlabel', 'plannedworkload', 'declaredprogress', 'prospectionstatus', 'projectstatus'), $max);
 
 
 print '</div><div class="secondcolumn fichehalfright boxhalfright" id="boxhalfright">';
@@ -330,9 +331,11 @@ $sql .= ", s.code_fournisseur, s.code_compta_fournisseur, s.fournisseur";
 $sql .= ", s.logo, s.email, s.entity";
 $sql .= ", s.canvas, s.status";
 $sql .= " FROM ".MAIN_DB_PREFIX."projet as p";
+$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."projet_extrafields as e ON e.fk_object=p.rowid";
 $sql .= " LEFT JOIN ".MAIN_DB_PREFIX."societe as s on p.fk_soc = s.rowid";
 $sql .= " WHERE p.entity IN (".getEntity('project').")";
 $sql .= " AND p.fk_statut = 1";
+$sql .= " AND (e.affaire is null OR e.affaire=0) ";
 if ($mine || !$user->hasRight('projet', 'all', 'lire')) {
 	$sql .= " AND p.rowid IN (".$db->sanitize($projectsListId).")"; // If we have this test true, it also means projectset is not 2
 }
