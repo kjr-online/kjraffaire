@@ -149,6 +149,13 @@ class ActionsKjraffaire extends CommonHookActions
 			exit();
 		}
 
+		// On redirige l'index.php des Projets pour ne pas afficher les affaires
+		if (in_array($parameters['context'], array('projectsindex'))) {
+			$url=dol_buildpath('/kjraffaire/projet/index.php',1);
+			header("Location: " . $url);
+			exit();
+		}
+
 		if (!$error) {
 			$this->results = array('myreturn' => 999);
 			$this->resprints = 'A text to show';
