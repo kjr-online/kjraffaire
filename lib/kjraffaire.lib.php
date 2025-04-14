@@ -278,13 +278,24 @@ function affaire_prepare_head(Project $project, $moreparam = '')
 	} else {
 		dol_syslog("Error SQL pendant count contacts: ".$db->lasterror(), LOG_ERR);
 	}
+
 	$head[$h][0] = DOL_URL_ROOT.'/custom/kjraffaire/affaire/contact.php?id='.((int) $project->id).($moreparam ? '&'.$moreparam : '');
 	$head[$h][1] = $langs->trans("AffaireContact");
 	if ($nbContacts > 0) {
 		$head[$h][1] .= '<span class="badge marginleftonlyshort">'.$nbContacts.'</span>';
 	}
 	$head[$h][2] = 'contact';
+	$h++;	
+
+	/*
+	$head[$h][0] = DOL_URL_ROOT.'/custom/kjraffaire/affaire/contact2.php?id='.((int) $project->id).($moreparam ? '&'.$moreparam : '');
+	$head[$h][1] = $langs->trans("AffaireContact");
+	if ($nbContacts > 0) {
+		$head[$h][1] .= '<span class="badge marginleftonlyshort">'.$nbContacts.'</span>';
+	}
+	$head[$h][2] = 'contact';
 	$h++;
+	*/
 
 	if (!getDolGlobalString('PROJECT_HIDE_TASKS')) {
 		// Then tab for sub level of projet, i mean tasks
