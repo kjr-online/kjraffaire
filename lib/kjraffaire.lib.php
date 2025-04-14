@@ -232,28 +232,18 @@ function affaire_prepare_head(Project $project, $moreparam = '')
 	$head[$h][2] = 'project';
 	$h++;
 
-	// Test si "Type d'affaire" = "Procédure", dans ce cas affichage de l'onglet :
+	// Test si "Contentieux", dans ce cas affichage de l'onglet :
 	require_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
 	$extrafields = new ExtraFields($db);
 	$extrafields->fetch_name_optionals_label('project');
 
-	if (!empty($project->array_options) && isset($project->array_options['options_type_affaire'])) {
-		$typeAffaireId = (int) $project->array_options['options_type_affaire']; // ID extrafield
-
-		// Req pour récup la valeur texte du dictionnaire
-		$sql = "SELECT label FROM ".MAIN_DB_PREFIX."kjraffaire_dico_type_affaire WHERE rowid = ".$typeAffaireId." AND active = 1";
-		$resql = $db->query($sql);
-
-		if ($resql) {
-			$obj = $db->fetch_object($resql);
-			if ($obj && $obj->label == 'Procédure') {
-				$head[$h][0] = DOL_URL_ROOT.'/custom/kjraffaire/affaire/instance.php?id='.$project->id;
-				$head[$h][1] = "Instance";
-				$head[$h][2] = 'instance';
-				$h++;
-			}
-		} else {
-			dol_syslog("Erreur SQL : ".$db->lasterror(), LOG_ERR);
+	if (!empty($project->array_options) && isset($project->array_options['options_contentieux'])) {
+		$contentieux = (int) $project->array_options['options_contentieux']; // ID extrafield
+		if ($contentieux == 1) {
+			$head[$h][0] = DOL_URL_ROOT.'/custom/kjraffaire/affaire/instance.php?id='.$project->id;
+			$head[$h][1] = "Instance";
+			$head[$h][2] = 'instance';
+			$h++;
 		}
 	}
 
@@ -279,6 +269,7 @@ function affaire_prepare_head(Project $project, $moreparam = '')
 		dol_syslog("Error SQL pendant count contacts: ".$db->lasterror(), LOG_ERR);
 	}
 
+	
 	$head[$h][0] = DOL_URL_ROOT.'/custom/kjraffaire/affaire/contact.php?id='.((int) $project->id).($moreparam ? '&'.$moreparam : '');
 	$head[$h][1] = $langs->trans("AffaireContact");
 	if ($nbContacts > 0) {
@@ -286,7 +277,7 @@ function affaire_prepare_head(Project $project, $moreparam = '')
 	}
 	$head[$h][2] = 'contact';
 	$h++;	
-
+	
 	/*
 	$head[$h][0] = DOL_URL_ROOT.'/custom/kjraffaire/affaire/contact2.php?id='.((int) $project->id).($moreparam ? '&'.$moreparam : '');
 	$head[$h][1] = $langs->trans("AffaireContact");
