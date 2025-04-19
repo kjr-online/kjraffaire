@@ -272,7 +272,8 @@ if (empty($reshook)) {
 		if ($result >= 0) {
 			$idElementContact = null; // Initialiser la variable
 
-			if (!empty($reference) || GETPOST('subtype_contact', 'int') > 0) {
+			//if (!empty($reference) || GETPOST('subtype_contact', 'int') > 0) {
+			if (1==1) {
 				// Récupérer le rowid du contact ajouté dans llx_element_contact
 				$sql = "SELECT rowid FROM ".MAIN_DB_PREFIX."element_contact 
 						WHERE element_id = ".$db->escape($object->id)." 
@@ -280,7 +281,6 @@ if (empty($reshook)) {
 						AND fk_c_type_contact = ".$db->escape($typeid)." 
 						ORDER BY rowid DESC LIMIT 1";
 				$resql = $db->query($sql);
-
 				if ($resql && ($obj = $db->fetch_object($resql))) {
 					$idElementContact = $obj->rowid;
 				} else {
@@ -288,8 +288,9 @@ if (empty($reshook)) {
 				}
 			}
 
-			// Insertion dans kjraffaire_souselement_reference si une référence est définie
-			if (!empty($reference)) {
+			// Insertion dans kjraffaire_souselement_reference
+			//if (!empty($reference)) {
+			if (1==1) {
 				if ($idElementContact !== null) {
 					$sql = "INSERT INTO ".MAIN_DB_PREFIX."kjraffaire_souselement_reference (id_element_contact, reference)
 							VALUES (".$db->escape($idElementContact).", '".$db->escape($reference)."')";
