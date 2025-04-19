@@ -232,6 +232,7 @@ class modKjraffaire extends DolibarrModules
 				"kjraffaire_dico_action_juridique",
 				"kjraffaire_dico_juridiction",
 				"kjraffaire_dico_soustype_contact",
+				"kjraffaire_dico_fonction_contact",				
 			),
 			// Label of tables
 			'tablib'=>array(
@@ -239,6 +240,7 @@ class modKjraffaire extends DolibarrModules
 				"Action juridique",
 				"Juridiction",
 				"Sous-types de contact - Affaire",
+				"Fonction des contacts - Affaire",				
 			),
 			// Request to select fields
 			'tabsql'=>array(
@@ -246,13 +248,15 @@ class modKjraffaire extends DolibarrModules
 				'SELECT f.rowid as rowid, f.label, f.active FROM '.MAIN_DB_PREFIX.'kjraffaire_dico_action_juridique as f',
 				'SELECT f.rowid as rowid, f.nom_etablissement, f.active FROM '.MAIN_DB_PREFIX.'kjraffaire_dico_juridiction as f',
 				'SELECT s.rowid AS rowid, s.code, s.libelle, t.libelle AS parent_type, s.fk_type_contact, s.position, s.active FROM '.MAIN_DB_PREFIX.'kjraffaire_dico_soustype_contact s LEFT JOIN '.MAIN_DB_PREFIX.'c_type_contact t ON s.fk_type_contact = t.rowid',
-		   ),
+				'SELECT f.rowid AS rowid, f.code, f.active FROM '.MAIN_DB_PREFIX.'kjraffaire_dico_fonction_contact f',
+			),
 		 	// Sort order
 		 	'tabsqlsort'=>array(
 				"label ASC",
 				"label ASC",
 				"nom_etablissement ASC",
 				"position ASC",
+				"code ASC",
 			),
 		 	// List of fields (result of select to show dictionary)
 		 	'tabfield'=>array(
@@ -260,6 +264,7 @@ class modKjraffaire extends DolibarrModules
 				"label",
 				"nom_etablissement",
 				"code,libelle,parent_type,position",
+				"code",
 			),
 		 	// List of fields (list of fields to edit a record)
 		 	'tabfieldvalue'=>array(
@@ -267,6 +272,7 @@ class modKjraffaire extends DolibarrModules
 				"label",
 				"nom_etablissement",
 				"code,libelle,fk_type_contact,position",
+				"code",
 			),
 		 	// List of fields (list of fields for insert)
 		 	'tabfieldinsert'=>array(
@@ -274,9 +280,11 @@ class modKjraffaire extends DolibarrModules
 				"label",
 				"nom_etablissement",
 				"code,libelle,fk_type_contact,position",
+				"code",
 			),
 		 	// Name of columns with primary key (try to always name it 'rowid')
 		 	'tabrowid'=>array(
+				"rowid",
 				"rowid",
 				"rowid",
 				"rowid",
@@ -285,6 +293,7 @@ class modKjraffaire extends DolibarrModules
 		 	// Condition to show each dictionary
 		 	'tabcond'=>array(
 				isModEnabled('kjraffaire'), 
+				isModEnabled('kjraffaire'),
 				isModEnabled('kjraffaire'),
 				isModEnabled('kjraffaire'),
 				isModEnabled('kjraffaire'),
@@ -300,6 +309,7 @@ class modKjraffaire extends DolibarrModules
 					'fk_type_contact' => $langs->trans('TypeParentTooltipHelp'),
 					'position' => $langs->trans('PositionTooltipHelp'),
 				),
+				array(),
 			),
 		);
 
